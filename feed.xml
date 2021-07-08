@@ -1,0 +1,1483 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://blog.ruo-chen.wang/feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.ruo-chen.wang/" rel="alternate" type="text/html" /><updated>2021-07-08T11:36:28+08:00</updated><id>https://blog.ruo-chen.wang/feed.xml</id><title type="html">weirane’s blog</title><subtitle>weirane's blog</subtitle><author><name>weirane</name></author><entry><title type="html">从零开始的 λ 演算</title><link href="https://blog.ruo-chen.wang/2021/04/lambda-calculus-from-the-ground-up.html" rel="alternate" type="text/html" title="从零开始的 λ 演算" /><published>2021-04-18T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2021/04/lambda-calculus-from-the-ground-up</id><content type="html" xml:base="https://blog.ruo-chen.wang/2021/04/lambda-calculus-from-the-ground-up.html">&lt;p&gt;这是我在看完 PyCon 2019 演讲「Lambda Calculus from the Ground Up」之后做的一个文字版，原视频在 &lt;a href=&quot;https://youtu.be/pkCLMl0e_0k&quot; target=&quot;_blank&quot;&gt;https://youtu.be/pkCLMl0e_0k&lt;/a&gt;。另见官网中的
+&lt;a href=&quot;https://pycon-archive.python.org/2019/schedule/presentation/79/&quot;&gt;介绍&lt;/a&gt;，这里提供一个翻译。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;最近关于编程风格的指南层出不穷。但是如果我们把风格限制为只允许出现单参数的函数会发生什么呢？没有模组，没有类，没有控制流，没有数据结构，甚至连整数、正则表达式等内建类型都没有，只有函数。用这种风格能写出程序吗？令人惊讶的是，答案是肯定的。在这个教程中，你将学到如何从零开始在 Python 中推导 λ 演算。&lt;/p&gt;
+
+  &lt;p&gt;你不会在这个教程中学到有实际用处的东西。没有打包，没有工具，没有库，没有部署，也没有神奇的 Python 编程技术。你也不会学到会被你用在实际项目上的东西。但是你将获得很多乐趣，将感到惊叹，并学习一些基础的计算机科学，这是你进一步探索函数式编程、类型理论、编程语言等话题的起点。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;规则&quot;&gt;规则&lt;/h2&gt;
+
+&lt;p&gt;如上介绍所说，我们只允许函数调用，或者参数替换这一种操作。以下列举一些不被允许的操作：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def f(x):
+    return x + 1  # 不允许使用数字和运算符 +
+
+def f(x, y):
+    ...  # 只允许单个参数
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以下是一些合法的操作，但是他们好像没什么意义：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def f(x):
+    return x
+
+def f(x):
+    return x(x)
+
+def f(x):
+    def g(y):
+        return x(y)
+    return g
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;所以在这样的一个如此抽象的系统中，我们可以做些什么？&lt;/p&gt;
+
+&lt;h2 id=&quot;布尔值1827&quot;&gt;布尔值（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=18m27s&quot;&gt;18:27&lt;/a&gt;）&lt;/h2&gt;
+
+&lt;p&gt;首先来构造布尔值和布尔运算。可以借用选择器的概念来构造布尔值。&lt;code&gt;TRUE&lt;/code&gt; 选择两个值中的第一个，而 &lt;code&gt;FALSE&lt;/code&gt; 选择第二个。注意这里的 &lt;code&gt;TRUE&lt;/code&gt; 和 &lt;code&gt;FALSE&lt;/code&gt; 并不是一个具体的值，而是一种行为。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def TRUE(x):
+    return lambda y: x
+
+def FALSE(x):
+    return lambda y: y
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; TRUE('5v')('gnd')
+'5v'
+&amp;gt;&amp;gt;&amp;gt; FALSE('5v')('gnd')
+'gnd'
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接下来是布尔运算 &lt;code&gt;NOT&lt;/code&gt;, &lt;code&gt;AND&lt;/code&gt; 和 &lt;code&gt;OR&lt;/code&gt;。注意到 &lt;code&gt;NOT&lt;/code&gt; 的参数应该是 &lt;code&gt;TRUE&lt;/code&gt; 或者
+&lt;code&gt;FALSE&lt;/code&gt;，它们都是需要两个输入的函数（&lt;a href=&quot;https://en.wikipedia.org/wiki/Currying&quot;&gt;柯里化&lt;/a&gt;的）。然后根据 &lt;code&gt;TRUE&lt;/code&gt; 和
+&lt;code&gt;FALSE&lt;/code&gt; 在两个值中的选择情况便可构造出 &lt;code&gt;NOT&lt;/code&gt;。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def NOT(x):
+    return x(FALSE)(TRUE)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对于 &lt;code&gt;AND&lt;/code&gt;，在它的第一个参数为 &lt;code&gt;TRUE&lt;/code&gt; 的时候，值就等于第二个参数；在第一个参数为
+&lt;code&gt;FALSE&lt;/code&gt; 的时候，值为 &lt;code&gt;FALSE&lt;/code&gt;（也就是它的第一个参数）。&lt;code&gt;OR&lt;/code&gt; 可以根据类似的思想写出：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def AND(x):
+    return lambda y: x(y)(x)
+
+def OR(x):
+    return lambda y: x(x)(y)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;details&gt;
+  &lt;summary&gt;布尔运算演示&lt;/summary&gt;
+  &lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; NOT(TRUE)
+&amp;lt;function FALSE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; NOT(FALSE)
+&amp;lt;function TRUE(x)&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+  &lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; AND(TRUE)(TRUE)
+&amp;lt;function TRUE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; AND(TRUE)(FALSE)
+&amp;lt;function FALSE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; AND(FALSE)(TRUE)
+&amp;lt;function FALSE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; AND(FALSE)(FALSE)
+&amp;lt;function FALSE(x)&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+  &lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; OR(TRUE)(TRUE)
+&amp;lt;function TRUE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; OR(TRUE)(FALSE)
+&amp;lt;function TRUE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; OR(FALSE)(TRUE)
+&amp;lt;function TRUE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; OR(FALSE)(FALSE)
+&amp;lt;function FALSE(x)&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/details&gt;
+
+&lt;h2 id=&quot;数字3445&quot;&gt;数字（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=34m45s&quot;&gt;34:45&lt;/a&gt;）&lt;/h2&gt;
+
+&lt;p&gt;因为我们能够做的只有函数调用，所以可以尝试用调用函数的次数表示数字，比如
+&lt;code&gt;TWO(f)(x)&lt;/code&gt; 的含义是以 &lt;code&gt;x&lt;/code&gt; 为初始值，调用 &lt;code&gt;f&lt;/code&gt; 两次：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;ONE = lambda f: lambda x: f(x)
+TWO = lambda f: lambda x: f(f(x))
+THREE = lambda f: lambda x: f(f(f(x)))
+FOUR = lambda f: lambda x: f(f(f(f(x))))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;零表示为调用函数零次，即不调用函数：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;ZERO = lambda f: lambda x: x
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;为了能够方便地展示我们的系统中的数字，在此写一个函数用来将系统中的数字转为
+Python 中的一个 &lt;code&gt;int&lt;/code&gt;。这个函数并不在 λ 演算系统中，只是为了方便地查看系统中的数字。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;def toint(n):
+    return n(lambda x: x + 1)(0)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;&amp;gt;&amp;gt;&amp;gt; toint(THREE)
+3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;加法和乘法5002&quot;&gt;加法和乘法（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=50m02s&quot;&gt;50:02&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;使用 &lt;a href=&quot;https://en.wikipedia.org/wiki/Peano_axioms&quot;&gt;Peano 公理&lt;/a&gt; 的思想，先实现一个数字的后继。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;SUCC = lambda n: lambda f: lambda x: f(n(f)(x))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在这个实现中，&lt;code&gt;SUCC&lt;/code&gt; 的返回值是一个数（因为拥有 &lt;code&gt;lambda f: lambda x: xxx&lt;/code&gt; 这样的「接口」），而这个返回的数是以 &lt;code&gt;x&lt;/code&gt; 为初始值调用了 &lt;code&gt;n&lt;/code&gt; 次函数 &lt;code&gt;f&lt;/code&gt;（用 &lt;code&gt;n(f)(x)&lt;/code&gt;
+表示）后又多调用了 &lt;code&gt;f&lt;/code&gt; 一次的结果，所以表示 &lt;em&gt;n&lt;/em&gt; + 1。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; toint(SUCC(THREE))
+4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;有了 &lt;code&gt;SUCC&lt;/code&gt; 就可以实现加法了。&lt;em&gt;x&lt;/em&gt; + &lt;em&gt;y&lt;/em&gt; 就是在 &lt;em&gt;x&lt;/em&gt; 的基础上调用 &lt;em&gt;y&lt;/em&gt; 次
+&lt;code&gt;SUCC&lt;/code&gt;。而数字的行为正好是调用某个函数多少次。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;ADD = lambda x: lambda y: y(SUCC)(x)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;乘法就是将「调用函数 &lt;code&gt;f&lt;/code&gt; &lt;em&gt;x&lt;/em&gt; 次」（即 &lt;code&gt;x(f)&lt;/code&gt; 这个行为）重复 &lt;em&gt;y&lt;/em&gt; 次：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;MUL = lambda x: lambda y: lambda f: y(x(f))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从上面的定义可以看出乘法就是用&lt;a href=&quot;https://en.wikipedia.org/wiki/Function_composition&quot;&gt;函数的复合&lt;/a&gt;，即 &lt;code&gt;MUL x y = y ∘ x&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;加法和乘法的演示：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; toint(ADD(FOUR)(THREE))
+7
+&amp;gt;&amp;gt;&amp;gt; toint(MUL(FOUR)(THREE))
+12
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;二元组20349&quot;&gt;二元组（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=2h03m49s&quot;&gt;2:03:49&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;为了实现减法，我们需要先实现二元组。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;CONS(a)(b)&lt;/code&gt; 将会返回一个「选择器」，这个选择器根据给它的参数选择 &lt;code&gt;a&lt;/code&gt; 和 &lt;code&gt;b&lt;/code&gt; 中的一个。这里的函数名借用了 Lisp 中的名字。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;CONS = lambda a: lambda b: (lambda s: s(a)(b))
+CAR = lambda p: p(TRUE)
+CDR = lambda p: p(FALSE)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; p = CONS(2)(3)
+&amp;gt;&amp;gt;&amp;gt; CAR(p)
+2
+&amp;gt;&amp;gt;&amp;gt; CDR(p)
+3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里的 &lt;code&gt;CONS&lt;/code&gt; 接受两个参数并构造了一个二元组，&lt;code&gt;CAR&lt;/code&gt; 和 &lt;code&gt;CDR&lt;/code&gt; 分别取二元组中的第一个和第二个值。&lt;/p&gt;
+
+&lt;h3 id=&quot;减法21215&quot;&gt;减法（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=2h12m15s&quot;&gt;2:12:15&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;下面借助二元组来实现一个数的前驱。我们可以从 (0, 0) 开始增加，(1, 0), (2, 1) ……
+二元组的第二个数是第一个数的前驱，而第一个数就是增加的次数。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;T = lambda p: CONS(SUCC(CAR(p)))(CAR(p))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; a = FOUR(T)(CONS(ZERO)(ZERO))
+&amp;gt;&amp;gt;&amp;gt; toint(CAR(a))
+4
+&amp;gt;&amp;gt;&amp;gt; toint(CDR(a))
+3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;上面的 &lt;code&gt;a&lt;/code&gt; 是从 (0, 0) 开始执行了函数 &lt;code&gt;T&lt;/code&gt; 4 次后的结果，它本身是一个二元组，第二个值就是 4 的前驱 3。于是实现前驱的方式为从 &lt;code&gt;CONS(ZERO)(ZERO)&lt;/code&gt; 开始执行函数
+&lt;code&gt;T&lt;/code&gt; &lt;code&gt;n&lt;/code&gt; 次，再取二元组的第二个值：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;PRED = lambda n: CDR(n(T)(CONS(ZERO)(ZERO)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; a = FOUR(THREE)
+&amp;gt;&amp;gt;&amp;gt; toint(a)
+81
+&amp;gt;&amp;gt;&amp;gt; b = PRED(a)
+&amp;gt;&amp;gt;&amp;gt; toint(b)
+80
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后仿造加法构造减法：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;SUB = lambda x: lambda y: y(PRED)(x)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; a = SUB(FOUR)(TWO)
+&amp;gt;&amp;gt;&amp;gt; toint(a)
+2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;判断一个数是否为零22412&quot;&gt;判断一个数是否为零（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=2h24m12s&quot;&gt;2:24:12&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;由于 &lt;code&gt;ZERO&lt;/code&gt; 的行为是直接返回第二个输入，所以下面的第二个括号中为 &lt;code&gt;TRUE&lt;/code&gt;。而其它的数都会调用第一个输入，所以直接让这个输入返回 &lt;code&gt;FALSE&lt;/code&gt;。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;ISZERO = lambda n: n(lambda _: FALSE)(TRUE)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; ISZERO(ZERO)
+&amp;lt;function TRUE(x)&amp;gt;
+&amp;gt;&amp;gt;&amp;gt; ISZERO(ONE)
+&amp;lt;function FALSE(x)&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;递归23013&quot;&gt;递归（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=2h30m13s&quot;&gt;2:30:13&lt;/a&gt;）&lt;/h2&gt;
+
+&lt;p&gt;我们已经有了 &lt;code&gt;AND&lt;/code&gt;, &lt;code&gt;SUCC&lt;/code&gt;, &lt;code&gt;ADD&lt;/code&gt;, &lt;code&gt;CONS&lt;/code&gt;, &lt;code&gt;CAR&lt;/code&gt; 和 &lt;code&gt;ISZERO&lt;/code&gt; 等等函数，现在我们要来挑战写出阶乘函数。阶乘在普通 Python 中的一种写法是&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;fact = lambda n: 1 if n == 0 else n * fact(n-1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;它只用了判断是否为零，乘法和减法三种操作。把它转化为 λ 演算中的形式，得到&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;FACT = lambda n: ISZERO(n) \
+                 (ONE) \
+                 (MUL(n)(FACT(PRED(n))))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;但是这个实现有问题：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; FACT(THREE)
+RecursionError: maximum recursion depth exceeded
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;惰性求值23440&quot;&gt;惰性求值（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=2h34m40s&quot;&gt;2:34:40&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;原因是 Python 函数不是惰性求值（lazy）的，递归发生在 &lt;code&gt;ISZERO&lt;/code&gt; 判断之前。为了规避这个限制，我们实现以下的 lazy 版本&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;L_TRUE = lambda x: lambda y: x()
+L_FALSE = lambda x: lambda y: y()
+L_ISZERO = lambda n: n(lambda _: L_FALSE)(L_TRUE)
+
+FACT = lambda n: L_ISZERO(n) \
+                 (lambda: ONE) \
+                 (lambda: MUL(n)(FACT(PRED(n))))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; a = FACT(THREE)
+&amp;gt;&amp;gt;&amp;gt; toint(a)
+6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;避免引用自己24730&quot;&gt;避免引用自己（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=2h47m30s&quot;&gt;2:47:30&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;目前还有一个问题，在 λ 演算中没有全局变量，没有把值「存储」在一个变量中的概念。而我们在 &lt;code&gt;FACT&lt;/code&gt; 的定义中使用了 &lt;code&gt;FACT&lt;/code&gt; 这个名字。&lt;/p&gt;
+
+&lt;div class=&quot;notice--info&quot;&gt;
+  &lt;p&gt;&lt;i class=&quot;fas fa-question-circle&quot;&gt;&lt;/i&gt;
+&lt;strong&gt;我们也用了 &lt;code&gt;ISZERO&lt;/code&gt; 和 &lt;code&gt;ONE&lt;/code&gt; 等等名字啊？&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;事实上这些名字不需要存储的概念。可以把所有出现了 &lt;code&gt;ONE&lt;/code&gt; 的地方换成它的定义（相当于 &lt;code&gt;:%s/\&amp;lt;ONE\&amp;gt;/lambda f:lambda x:f(x)/g&lt;/code&gt;）而程序还是会正确运行。而不能换 &lt;code&gt;FACT&lt;/code&gt;
+的原因是它的定义本身就使用了 &lt;code&gt;FACT&lt;/code&gt; 这个名字。&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;p&gt;如何在实现 &lt;code&gt;FACT&lt;/code&gt; 的时候不引用它自己的名字？为了方便先用 &lt;code&gt;fact&lt;/code&gt; 函数来试验，我们不希望在下面的实现中出现 &lt;code&gt;fact&lt;/code&gt;：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;fact = lambda n: 1 if n == 0 else n * fact(n-1)
+#                                     ^^^^ bad
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;一种方式是把 &lt;code&gt;fact&lt;/code&gt; 作为参数传进去，但是这样还是用了 &lt;code&gt;fact&lt;/code&gt; 这个名字，而且这个写法在 &lt;code&gt;fact&lt;/code&gt; 还没定义的时候就使用了它。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;fact = (lambda f: lambda n: 1 if n == 0 else n * f(n-1)) \
+       (fact)
+#       ^^^^ ?
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;解决方案是直接复制粘贴，而不是把自己的名字传进参数：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;fact = (lambda f: lambda n: 1 if n == 0 else n * f(n-1)) \
+       (lambda f: lambda n: 1 if n == 0 else n * f(n-1))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们还需要修正一下 &lt;code&gt;f&lt;/code&gt; 的调用方法（因为需要先传入 &lt;code&gt;f&lt;/code&gt; 再传入 &lt;code&gt;n&lt;/code&gt;）。下面是最终的结果：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;fact = (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1)) \
+       (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1))
+#                                                ^^^^
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; fact(4)
+24
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以把 &lt;code&gt;fact&lt;/code&gt; 直接换成它的定义：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1)) \
+... (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1))(4)
+24
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;不动点30038&quot;&gt;不动点（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=3h00m38s&quot;&gt;3:00:38&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;以上的实现有一点不好，它把一个很长的括号重复了两次。我们也可以借助不动点实现
+&lt;code&gt;fact&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;回到之前尝试实现 &lt;code&gt;fact&lt;/code&gt; 的时候，&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;fact = (lambda f: lambda n: 1 if n == 0 else n * f(n-1))(fact)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果把中间的部分抽出来&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;R = lambda f: lambda n: 1 if n == 0 else n * f(n-1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那么 &lt;code&gt;fact = R(fact)&lt;/code&gt;，即 &lt;code&gt;fact&lt;/code&gt; 是 &lt;code&gt;R&lt;/code&gt; 的一个不动点。如果有一个可以计算不动点的函数，就可以得到 &lt;code&gt;fact&lt;/code&gt; 了。&lt;/p&gt;
+
+&lt;p&gt;假设这个函数存在，设它为 &lt;code&gt;Y&lt;/code&gt;。那么有 &lt;code&gt;Y(R) = R(Y(R))&lt;/code&gt;。变形：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;Y(R) = (lambda x: R(x))(Y(R))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;仿照上一节中的做法，把括号中的表达式复制一遍，再修正一下 &lt;code&gt;x&lt;/code&gt; 的调用方法：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;Y(R) = (lambda x: R(x))(lambda x: R(x))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;Y(R) = (lambda x: R(x(x)))(lambda x: R(x(x)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那么我们就得到了 &lt;code&gt;Y&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;Y = lambda f: (lambda x: f(x(x)))(lambda x: f(x(x)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;y-组合子31320&quot;&gt;Y 组合子（&lt;a href=&quot;https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;amp;t=3h13m20s&quot;&gt;3:13:20&lt;/a&gt;）&lt;/h3&gt;
+
+&lt;p&gt;这里的 &lt;code&gt;Y&lt;/code&gt; 就是著名的 &lt;a href=&quot;https://en.wikipedia.org/wiki/Fixed-point_combinator#Fixed-point_combinators_in_lambda_calculus&quot;&gt;Y 组合子&lt;/a&gt;（Y combinator）。但是&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; R = lambda f: lambda n: 1 if n == 0 else n * f(n-1)
+&amp;gt;&amp;gt;&amp;gt; fact = Y(R)
+RecursionError: maximum recursion depth exceeded
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;要解决这个问题，可以把 &lt;code&gt;x(x)&lt;/code&gt; 换成 &lt;code&gt;lambda z: x(x)(z)&lt;/code&gt;，它可以延后 &lt;code&gt;x&lt;/code&gt; 的求值。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;Y = lambda f: (lambda x: f(lambda z: x(x)(z)))(lambda x: f(lambda z: x(x)(z)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; R = lambda f: lambda n: 1 if n == 0 else n * f(n-1)
+&amp;gt;&amp;gt;&amp;gt; fact = Y(R)
+&amp;gt;&amp;gt;&amp;gt; fact(4)
+24
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;把 &lt;code&gt;Y&lt;/code&gt; 用在其它函数上：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; fib = Y(lambda f: lambda n: 1 if n &amp;lt;= 2 else f(n-1) + f(n-2))
+&amp;gt;&amp;gt;&amp;gt; fib(10)
+55
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;实现 &lt;code&gt;FACT&lt;/code&gt;：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python-repl&quot;&gt;&amp;gt;&amp;gt;&amp;gt; FACT = Y(
+...     lambda f: lambda n: L_ISZERO(n) \
+...                         (lambda: ONE) \
+...                         (lambda: MUL(n)(f(PRED(n))))
+... )
+&amp;gt;&amp;gt;&amp;gt; a = FACT(FOUR)
+&amp;gt;&amp;gt;&amp;gt; toint(a)
+24
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;本文中的代码已整理到 &lt;a href=&quot;https://gist.github.com/weirane/62a976baab7f4e56a4b5de596d41177e&quot;&gt;Gist&lt;/a&gt; 上。&lt;/p&gt;
+
+&lt;h2 id=&quot;补充&quot;&gt;补充&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;#惰性求值23440&quot;&gt;惰性求值&lt;/a&gt; 一节中也可以使用另一种方法。参考 &lt;a href=&quot;#y-组合子31320&quot;&gt;Y 组合子&lt;/a&gt;
+一节，用 &lt;code&gt;lambda x: f(x)&lt;/code&gt; 代替 &lt;code&gt;f&lt;/code&gt;，这样不需要新定义 lazy 版本的函数。因为万物皆是函数，所以不需要担心 &lt;code&gt;f(x)&lt;/code&gt; 因为 &lt;code&gt;f&lt;/code&gt; 不是函数而出错。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;FACT = lambda n: ISZERO(n) \
+                 (lambda x: ONE(x)) \
+                 (lambda x: MUL(n)(FACT(PRED(n)))(x))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&quot;language-python&quot;&gt;FACT = Y(
+    lambda f: lambda n: ISZERO(n) \
+                        (lambda x: ONE(x)) \
+                        (lambda x: MUL(n)(f(PRED(n)))(x))
+)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;这里推导的 λ 演算没有什么实际用途，没有谁会用这里的 λ 演算写一个现实中使用的程
+  序；&lt;/li&gt;
+  &lt;li&gt;但是 λ 演算的思想在函数式语言中随处可见，非函数式语言也都在慢慢吸收函数式语言
+  中的一些的思想和概念；&lt;/li&gt;
+  &lt;li&gt;λ 演算就像机器语言一样。现在绝大多数人都在写高级语言，但是高级语言在某种程度上
+  是机器语言的抽象，了解一些机器语言或者汇编的知识有助于写出更好，效率更高的代
+  码。了解 λ 演算对理解和运用函数式语言和其它语言中的函数式元素是很有益的。&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>weirane</name></author><category term="Programming" /><category term="functional-programming" /><category term="lambda-calculus" /><category term="python" /><summary type="html">这是我在看完 PyCon 2019 演讲「Lambda Calculus from the Ground Up」之后做的一个文字版，原视频在 https://youtu.be/pkCLMl0e_0k。另见官网中的 介绍，这里提供一个翻译。</summary></entry><entry><title type="html">从 Manjaro 迁移到 Arch Linux</title><link href="https://blog.ruo-chen.wang/2021/03/switch-from-manjaro-to-arch.html" rel="alternate" type="text/html" title="从 Manjaro 迁移到 Arch Linux" /><published>2021-03-21T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2021/03/switch-from-manjaro-to-arch</id><content type="html" xml:base="https://blog.ruo-chen.wang/2021/03/switch-from-manjaro-to-arch.html">&lt;p&gt;今天我把系统换成了 Arch Linux，用的是 Btrfs 文件系统，套上 LUKS 加密（加密包括
+&lt;code&gt;/boot&lt;/code&gt;）。由于我已经在虚拟机里面实验过整个过程，所以今天的安装过程非常顺利，一共只用了一两个小时。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2021-03-25 更新：增加了 &lt;a href=&quot;#redshift-无法使用-geoclue&quot;&gt;redshift 无法使用 geoclue&lt;/a&gt; 一节&lt;/li&gt;
+  &lt;li&gt;2021-04-18 更新：增加了 &lt;a href=&quot;#将-cache-单独分为一个子卷&quot;&gt;将 &lt;code&gt;~/.cache&lt;/code&gt; 单独分为一个子卷&lt;/a&gt; 一节&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
+
+&lt;p&gt;前几天用 &lt;code&gt;btrfs-convert&lt;/code&gt; 把我的 Manjaro 的文件系统换成了 Btrfs，然后继续开发我的
+Btrfs 快照管理工具 &lt;a href=&quot;https://github.com/weirane/dosnap&quot;&gt;dosnap&lt;/a&gt;。奇怪的是，在出错的时候（如 &lt;code&gt;panic!&lt;/code&gt;）程序不会退出
+，而是直接卡住。这还不是最致命的，过了几秒钟我发现我的 polybar 不见了，然后发现我的家目录里少了一些东西，包括 &lt;code&gt;~/.config&lt;/code&gt;。还好我之前有做快照，可以直接用
+&lt;code&gt;rsync&lt;/code&gt; 恢复数据。但是在我的一个 Arch Linux 虚拟机中程序如果出错会正确退出。不知道是为什么，可能是 &lt;code&gt;btrfs-convert&lt;/code&gt; 的什么 bug。然后就想到用 Arch 虚拟机也有很长时间了，于是打算直接把物理机也换到 Arch Linux 上来。&lt;/p&gt;
+
+&lt;h2 id=&quot;备份&quot;&gt;备份&lt;/h2&gt;
+
+&lt;p&gt;可以使用 Btrfs 的 send/receive 功能进行备份。注意备份的移动硬盘也需要是 Btrfs 文件系统。先对各个子卷做只读快照，然后对每个快照进行 &lt;code&gt;btrfs send&lt;/code&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo btrfs send /mnt/_snapshots/${SNAPSHOT_NAME?} | sudo btrfs receive ${EXTERNAL_DRIVE?}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后再记录一下安装过的软件：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;pacman -Qe &amp;gt;${EXTERNAL_DRIVE?}/pacman-qe
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;安装&quot;&gt;安装&lt;/h2&gt;
+
+&lt;p&gt;启动 archiso，然后调整一下终端字体&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;setfont ter-v28b
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;installation-guide&quot;&gt;Installation Guide&lt;/h3&gt;
+
+&lt;p&gt;打开 &lt;a href=&quot;https://wiki.archlinux.org/index.php/installation_guide&quot;&gt;installation guide&lt;/a&gt;，一直做到 Partition the disks 之前。&lt;/p&gt;
+
+&lt;p&gt;由于磁盘已经分区，所以不需要再分区了。直接上 LUKS 并格式化为 Btrfs。注意需要用
+luks1，因为 GRUB 目前还不支持 LUKS2。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;cryptsetup --type luks1 luksFormat /dev/nvme0n1p4
+cryptsetup open /dev/nvme0n1p4 archlinux
+mkfs.btrfs -L archlinux /dev/mapper/archlinux
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后创建子卷并挂载分区&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;mount /dev/mapper/archlinux /mnt
+btrfs subv create /mnt/@
+btrfs subv create /mnt/@home
+btrfs subv create /mnt/@opt
+btrfs subv create /mnt/@var
+umount /mnt
+
+opt='noatime,ssd,space_cache=v2,compress=zstd'
+mount -o $opt,subvol=@ /dev/mapper/archlinux /mnt
+mkdir /mnt/{efi,var,home,opt}
+mount /dev/nvme0n1p1 /mnt/efi
+mount -o $opt,subvol=@home /dev/mapper/archlinux /mnt/home
+mount -o $opt,subvol=@opt /dev/mapper/archlinux /mnt/opt
+mount -o $opt,subvol=@var /dev/mapper/archlinux /mnt/var
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对 &lt;code&gt;/var/log/journal&lt;/code&gt; 禁用 CoW：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;mkdir -p /mnt/var/log/journal
+chattr +C /mnt/var/log/journal
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后从 installation guide 的 &lt;a href=&quot;https://wiki.archlinux.org/index.php/installation_guide#Installation&quot;&gt;Installation&lt;/a&gt; 一节开始继续一直做到结尾，记得要在 &lt;code&gt;pacstrap&lt;/code&gt; 的时候加上 &lt;code&gt;btrfs-progs&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;额外的操作&quot;&gt;额外的操作&lt;/h3&gt;
+
+&lt;p&gt;安装到这里还需一些额外的操作。更改 &lt;code&gt;/etc/mkinitcpio.conf&lt;/code&gt; 的 &lt;code&gt;BINARIES&lt;/code&gt;，然后在
+&lt;code&gt;HOOKS&lt;/code&gt; 中的 &lt;code&gt;filesystems&lt;/code&gt; 之前加入 &lt;code&gt;encrypt&lt;/code&gt;：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;BINARIES=(/usr/bin/btrfs)
+HOOKS=(base udev autodetect modconf block encrypt filesystems keyboard fsck)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;然后重新生成 initramfs&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;mkinitcpio -P
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;更改 &lt;code&gt;/etc/default/grub&lt;/code&gt; 中的内核命令行，这里我还顺便打开了 cgroup v2。
+&lt;code&gt;PARTUUID&lt;/code&gt; 可以使用 &lt;code&gt;blkid&lt;/code&gt; 命令查看。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;GRUB_CMDLINE_LINUX_DEFAULT=&quot;loglevel=3 quiet systemd.unified_cgroup_hierarchy=1&quot;
+GRUB_CMDLINE_LINUX=&quot;cryptdevice=PARTUUID=xxx:archlinux&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;同步家目录&quot;&gt;同步家目录&lt;/h3&gt;
+
+&lt;p&gt;新建用户，并从备份中用 rsync 把家目录同步回来：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;# run as wang
+rsync -a ${EXTERNAL_DRIVE?}/home-snap/wang/* ~
+rsync -a ${EXTERNAL_DRIVE?}/home-snap/wang/.* ~
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;安装软件包&quot;&gt;安装软件包&lt;/h3&gt;
+
+&lt;p&gt;安装我自己常用的软件&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;cd ~/.dotfiles/weirane-dotfiles-deps
+makepkg -si
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;用下面的命令查看有哪些之前安装过而不在本机上的包，然后选择要安装的包并安装。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;comm -23 &amp;lt;(cut -d' ' -f1 ${EXTERNAL_DRIVE?}/pacman-qe | sort) \
+         &amp;lt;(pacman -Qq | sort) | less
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;配置&quot;&gt;配置&lt;/h2&gt;
+
+&lt;p&gt;下面进行一些增加安全性或者便携性的配置。&lt;/p&gt;
+
+&lt;h3 id=&quot;加密-swap&quot;&gt;加密 swap&lt;/h3&gt;
+
+&lt;p&gt;为防止关机后 swap 中残留明文的内存数据，需要将 swap 加密。我不需要 hibernation，所以参考 &lt;a href=&quot;https://wiki.archlinux.org/index.php/Dm-crypt/Swap_encryption#Without_suspend-to-disk_support&quot;&gt;ArchWiki&lt;/a&gt;，将以下内容加入 &lt;code&gt;/etc/crypttab&lt;/code&gt;：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;swap  PARTUUID=xxx  /dev/urandom  swap,cipher=aes-xts-plain64,size=512
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;将原来 &lt;code&gt;/etc/fstab&lt;/code&gt; 中 swap 的一行改为&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;/dev/mapper/swap        none            swap            defaults        0 0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;key-in-initramfs&quot;&gt;Key in initramfs&lt;/h3&gt;
+
+&lt;p&gt;可以在 initramfs 中放一个 LUKS key，这样在开机的时候就不需要输两次 LUKS 密码了。我一般将 key 放在 &lt;code&gt;/etc&lt;/code&gt; 中。注意要调整 key file 和装有 key file 的 initramfs 的权限。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo dd bs=512 count=4 if=/dev/urandom of=/path/to/key
+sudo cryptsetup luksAddKey /dev/nvme0n1p4 /path/to/key
+chmod 000 /path/to/key
+chmod -R g-rwx,o-rwx /boot
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;把 key 加入 &lt;code&gt;/etc/mkinitcpio.conf&lt;/code&gt; 中的 &lt;code&gt;FILES&lt;/code&gt;：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;FILES=(/path/to/key)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;改 &lt;code&gt;/etc/default/grub&lt;/code&gt; 中的内核命令行，加入 &lt;code&gt;cryptkey=rootfs:/path/to/key&lt;/code&gt;：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;GRUB_CMDLINE_LINUX=&quot;cryptdevice=PARTUUID=xxx:archlinux cryptkey=rootfs:/path/to/key&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最后重新生成 initramfs 和 GRUB config&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo mkinitcpio -P
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;解决问题&quot;&gt;解决问题&lt;/h2&gt;
+
+&lt;h3 id=&quot;xbacklight&quot;&gt;xbacklight&lt;/h3&gt;
+
+&lt;p&gt;进入图形界面后发现 polybar 中的亮度模块没有显示，&lt;code&gt;xbacklight&lt;/code&gt; 命令没有输出。参考
+&lt;a href=&quot;https://wiki.archlinux.org/index.php/Backlight#xbacklight&quot;&gt;ArchWiki&lt;/a&gt; 之后发现应该安装 &lt;code&gt;xf86-video-intel&lt;/code&gt; 并将下面的配置写入
+&lt;code&gt;/etc/X11/xorg.conf.d/20-xbacklight.conf&lt;/code&gt;：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Section &quot;Device&quot;
+    Identifier  &quot;Intel Graphics&quot;
+    Driver      &quot;intel&quot;
+    Option      &quot;Backlight&quot;  &quot;intel_backlight&quot;
+EndSection
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;redshift-无法使用-geoclue&quot;&gt;redshift 无法使用 geoclue&lt;/h3&gt;
+
+&lt;p&gt;运行 &lt;code&gt;redshift&lt;/code&gt; 有如下报错&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Trying location provider `geoclue2'...
+Using provider `geoclue2'.
+Using method `randr'.
+Waiting for initial location to become available...
+Unable to start GeoClue client: GDBus.Error:org.freedesktop.DBus.Error.AccessDenied: 'redshift' disallowed, no agent for UID 1000.
+Access to the current location was denied by GeoClue!
+Make sure that location services are enabled and that Redshift is permitted
+to use location services. See https://github.com/jonls/redshift#faq for more
+information.
+Unable to get location from provider.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;查阅 &lt;a href=&quot;https://wiki.archlinux.org/index.php/Redshift#Redshift_GDBus.Error:org.freedesktop.DBus.Error.AccessDenied_on_start&quot;&gt;ArchWiki&lt;/a&gt;，将以下内容写入
+&lt;code&gt;~/.config/systemd/user/geoclue-agent.service&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ini&quot;&gt;[Unit]
+Description=redshift needs to get a (geo)clue
+
+[Service]
+ExecStart=/usr/lib/geoclue-2.0/demos/agent
+
+[Install]
+WantedBy=default.target
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;运行命令 &lt;code&gt;systemctl --user enable --now geoclue-agent.service&lt;/code&gt; 之后就可以使用
+redshift 了。&lt;/p&gt;
+
+&lt;h3 id=&quot;将-cache-单独分为一个子卷&quot;&gt;将 &lt;code&gt;~/.cache&lt;/code&gt; 单独分为一个子卷&lt;/h3&gt;
+
+&lt;p&gt;我现在对我的家目录每两小时进行&lt;a href=&quot;https://github.com/weirane/dosnap&quot;&gt;快照&lt;/a&gt;，用了一段时间后&lt;a href=&quot;https://github.com/nachoparker/btrfs-du&quot;&gt;发现&lt;/a&gt;每个快照都有至少 30 MB 的 exclusive data。&lt;a href=&quot;https://serverfault.com/a/580264&quot;&gt;比较&lt;/a&gt;后发现主要是 &lt;code&gt;~/.cache&lt;/code&gt;
+中的数据，所以想把它单独分为一个子卷。&lt;/p&gt;
+
+&lt;p&gt;登出当前用户，并在 tty 登陆 root 用户。把 &lt;code&gt;~/.cache&lt;/code&gt; 这个目录空出来，并创建子卷&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;cd /home/wang
+mv .cache .cache2
+btrfs subv create /home/wang/.cache
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后把数据复制回来，再恢复权限。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;cp -a --reflink .cache2/* .cache
+chown wang:wang .cache
+rm -r .cache2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;分开 &lt;code&gt;~/.cache&lt;/code&gt; 之后每两小时快照的 exclusive data 基本上在 20 MB 之下，效果还可以。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;整个过程挺顺利的，现在应该只剩一些之前在 &lt;code&gt;/etc&lt;/code&gt; 中的配置没来得及同步了。由于家目录是直接 &lt;code&gt;rsync&lt;/code&gt; 过来的，所以所有的数据都还在，家目录中的程序的配置也没有丢失，
+firefox 等程序也不需要重新登录或者进行其它的配置。&lt;/p&gt;
+
+&lt;h2 id=&quot;参考&quot;&gt;参考&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.lilydjwg.me/2019/3/31/move-system-to-ssd.214336.html&quot;&gt;https://blog.lilydjwg.me/2019/3/31/move-system-to-ssd.214336.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://gist.github.com/ansulev/7cdf38a3d387599adf9addd248b09db8&quot;&gt;https://gist.github.com/ansulev/7cdf38a3d387599adf9addd248b09db8&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>weirane</name></author><category term="Tweaks" /><category term="archlinux" /><category term="btrfs" /><category term="luks" /><category term="redshift" /><category term="swap" /><category term="xbacklight" /><summary type="html">今天我把系统换成了 Arch Linux，用的是 Btrfs 文件系统，套上 LUKS 加密（加密包括 /boot）。由于我已经在虚拟机里面实验过整个过程，所以今天的安装过程非常顺利，一共只用了一两个小时。</summary></entry><entry><title type="html">使用 pass 管理密码</title><link href="https://blog.ruo-chen.wang/2021/01/pass.html" rel="alternate" type="text/html" title="使用 pass 管理密码" /><published>2021-01-09T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2021/01/pass</id><content type="html" xml:base="https://blog.ruo-chen.wang/2021/01/pass.html">&lt;p&gt;Pass 是一个使用 GPG 管理密码的工具。它的 &lt;a href=&quot;https://www.passwordstore.org/&quot;&gt;网站&lt;/a&gt; 介绍说：&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Pass: the standard unix password manager&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;del&gt;有 ed 编辑器内味了&lt;/del&gt;&lt;sup id=&quot;fnref:ed-joke&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:ed-joke&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+
+&lt;p&gt;Pass 保存的密码被存放在目录 &lt;code&gt;${PASSWORD_&lt;wbr /&gt;STORE_&lt;wbr /&gt;DIR:-&lt;wbr /&gt;$HOME/&lt;wbr /&gt;.password-store}&lt;/code&gt;
+下，每个密码都是一个 GPG 加密的文件。除了密码还可以在此文件中存放用户名，&lt;a href=&quot;https://en.wikipedia.org/wiki/One-time_password&quot;&gt;OTP&lt;/a&gt;
+URI 等其它信息。同时还可以把该目录作为一个 Git 仓库用于同步密码。&lt;/p&gt;
+
+&lt;h2 id=&quot;生成-gpg-密钥&quot;&gt;生成 GPG 密钥&lt;/h2&gt;
+
+&lt;p&gt;如果没有 GPG 密钥对则需要先生成。使用命令&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;gpg --full-gen-key
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;输入对应的信息即可，一般都可以用默认值。关于生成 GPG 密钥还可以看看
+&lt;a href=&quot;https://wiki.archlinux.org/index.php/GnuPG#Create_a_key_pair&quot;&gt;ArchWiki&lt;/a&gt;。为了避免每次需要密码的时候都得输入 GPG 密钥的密码，可以配置 &lt;a href=&quot;https://wiki.archlinux.org/index.php/GNOME/Keyring&quot;&gt;GNOME Keyring&lt;/a&gt; 或者 &lt;a href=&quot;https://github.com/cruegge/pam-gnupg&quot;&gt;pam-gnupg&lt;/a&gt; 来在登录后记住密码。&lt;/p&gt;
+
+&lt;h2 id=&quot;pass-命令&quot;&gt;&lt;code&gt;pass&lt;/code&gt; 命令&lt;/h2&gt;
+
+&lt;p&gt;首先用生成 GPG 密钥的 email 初始化 pass：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;pass init ${GPGEMAIL?}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;添加密码&quot;&gt;添加密码&lt;/h3&gt;
+
+&lt;p&gt;使用命令 &lt;code&gt;pass insert email/fastmail&lt;/code&gt;，输入两遍密码即可添加 &lt;code&gt;email/fastmail&lt;/code&gt; 的密码。当密码的名字带有 &lt;code&gt;/&lt;/code&gt; 时会将密码文件存放在对应的子目录下。运行 &lt;code&gt;pass&lt;/code&gt; 或者
+&lt;code&gt;pass ls&lt;/code&gt; 可以看到目前存储了哪些密码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-console&quot;&gt;$ pass ls
+Password Store
+└── email
+    └── fastmail
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;生成密码&quot;&gt;生成密码&lt;/h3&gt;
+
+&lt;p&gt;使用 &lt;code&gt;pass generate website 16&lt;/code&gt; 来生成一个长度为 16 的密码并保存为 &lt;code&gt;website&lt;/code&gt;。可以加上 &lt;code&gt;-n&lt;/code&gt; 选项生成不带特殊符号的密码。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-console&quot;&gt;$ pass generate website 16 -n
+The generated password for website is:
+yKGhEkei98fGRKY6
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;获取密码&quot;&gt;获取密码&lt;/h3&gt;
+
+&lt;p&gt;获取 &lt;code&gt;email/fastmail&lt;/code&gt; 的密码的方法是运行 &lt;code&gt;pass email/fastmail&lt;/code&gt;，或者加上 &lt;code&gt;-c&lt;/code&gt; 选项将密码复制到剪贴板，此密码会在 45 秒后从剪贴板消失。注意如果密码文件有多行（如还存放了用户名等其它信息时），此命令只复制第一行。&lt;/p&gt;
+
+&lt;h3 id=&quot;操作密码文件&quot;&gt;操作密码文件&lt;/h3&gt;
+
+&lt;p&gt;用 &lt;code&gt;pass mv&lt;/code&gt;，&lt;code&gt;pass cp&lt;/code&gt;，&lt;code&gt;pass rm&lt;/code&gt;，&lt;code&gt;pass edit&lt;/code&gt; 对密码文件进行相应的操作。&lt;/p&gt;
+
+&lt;h2 id=&quot;使用-git&quot;&gt;使用 Git&lt;/h2&gt;
+
+&lt;p&gt;可以使用 git 来同步密码。在对应的 &lt;code&gt;git&lt;/code&gt; 命令前添加 &lt;code&gt;pass&lt;/code&gt; 即可直接操作 pass 的
+git 仓库。如&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;pass git init
+pass git remote add origin git@git.example.com:password-store.git
+pass git push -u origin master
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;为了安全还可以配置一个自己的 Git 服务器，见 &lt;a href=&quot;/2020/08/git-server.html&quot;&gt;搭建一个 Git 服务器&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;清除-dangling-commits&quot;&gt;清除 dangling commits&lt;/h3&gt;
+
+&lt;p&gt;有时想要重写 commit 历史，但是旧 commit 并不会被清除：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-console&quot;&gt;$ git fsck --full
+Checking object directories: 100% (256/256), done.
+Checking objects: 100% (26/26), done.
+dangling commit b876e31a2740da9198c851532ce9a83ccaa71d21
+dangling commit 74e9cfda669d39ef8154270fcc8e14e8247b7c05
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;此时可以使用如下命令来清除这些 commit。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;git reflog expire --expire=now --all
+git gc --prune=now
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;使用场景&quot;&gt;使用场景&lt;/h2&gt;
+
+&lt;p&gt;我使用 pass 的主要场景是在脚本中获取密码，或者用于在配置文件中使用 pass 命令获取密码。这样做可以防止直接在配置中明文填写密码。如在 &lt;a href=&quot;https://neomutt.org/&quot;&gt;neomutt&lt;/a&gt; 中配置帐号时：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;set my_pass = &quot;`pass show email/foo | head -1`&quot;
+set smtp_pass = $my_pass
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Pass 还可在浏览器中使用（Firefox 扩展 &lt;a href=&quot;https://github.com/passff/passff&quot;&gt;passff&lt;/a&gt;，Chrome 扩展 &lt;a href=&quot;https://github.com/browserpass/browserpass-extension&quot;&gt;browserpass&lt;/a&gt;）&lt;/p&gt;
+
+&lt;h2 id=&quot;pass-的扩展&quot;&gt;Pass 的扩展&lt;/h2&gt;
+
+&lt;p&gt;Pass 有许多扩展以增强其功能。例如可以通过 &lt;a href=&quot;https://github.com/tadfisher/pass-otp&quot;&gt;pass-otp&lt;/a&gt; 来使用 OTP：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;添加 OTP URI: &lt;code&gt;pass otp add email/fastmail&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;获取 OTP code: &lt;code&gt;pass otp email/fastmail&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;虽然密码文件会被 GPG 加密，但是密码库的目录结构和文件名都是不加密的，任何人都可以查看。可以使用 &lt;a href=&quot;https://github.com/roddhjav/pass-tomb&quot;&gt;pass-tomb&lt;/a&gt; 解决这个问题。它将密码存放在一个 &lt;a href=&quot;https://www.dyne.org/software/tomb/&quot;&gt;tomb&lt;/a&gt; 中，查看密码前需要使用 &lt;code&gt;pass open&lt;/code&gt; 将 tomb 打开，查看完毕后再使用 &lt;code&gt;pass close&lt;/code&gt; 关闭
+tomb。&lt;/p&gt;
+
+&lt;p&gt;其它的扩展见官网的 &lt;a href=&quot;https://www.passwordstore.org/#extensions&quot;&gt;列表&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2 id=&quot;ios&quot;&gt;iOS&lt;/h2&gt;
+
+&lt;p&gt;Pass 在其它平台上都有客户端，在 iOS 中有 &lt;a href=&quot;https://mssun.github.io/passforios/&quot;&gt;passforios&lt;/a&gt;。它有一些扩展功能，比如可在密码文件的第一行之后使用 &lt;code&gt;key: value&lt;/code&gt; 的形式存放其他信息，如用户名等，可以方便地查看和复制这些额外信息。它也可以添加 OTP URI 以获取 OTP code。&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:ed-joke&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://www.gnu.org/fun/jokes/ed-msg.html&quot; target=&quot;_blank&quot;&gt;https://www.gnu.org/fun/jokes/ed-msg.html&lt;/a&gt; &lt;a href=&quot;#fnref:ed-joke&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>weirane</name></author><category term="Tools" /><category term="pass" /><category term="gpg" /><category term="git" /><summary type="html">Pass 是一个使用 GPG 管理密码的工具。它的 网站 介绍说： Pass: the standard unix password manager</summary></entry><entry><title type="html">更换域名</title><link href="https://blog.ruo-chen.wang/2020/09/change-domain.html" rel="alternate" type="text/html" title="更换域名" /><published>2020-09-11T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2020/09/change-domain</id><content type="html" xml:base="https://blog.ruo-chen.wang/2020/09/change-domain.html">&lt;p&gt;2021-04-18 更新：isso 和 goatcounter 不想写博客了 😂 不过我把配置过程放在&lt;a href=&quot;https://wiki.ruo-chen.wang&quot;&gt;我的
+wiki&lt;/a&gt; 上了 → &lt;a href=&quot;https://wiki.ruo-chen.wang/wiki/Isso&quot;&gt;isso&lt;/a&gt;, &lt;a href=&quot;https://wiki.ruo-chen.wang/wiki/GoatCounter&quot;&gt;goatcounter&lt;/a&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;买了一个新域名 &lt;code&gt;ruo-chen.wang&lt;/code&gt;，打算用来替换原来的 &lt;code&gt;wangrc.top&lt;/code&gt;。顺便把博客的域名从 GitHub 的 &lt;code&gt;weirane.&lt;wbr /&gt;github.&lt;wbr /&gt;io&lt;/code&gt; 换成自己的域名，再把自己搭建的评论系统 &lt;a href=&quot;https://posativ.org/isso/&quot;&gt;isso&lt;/a&gt; 和流量分析工具 &lt;a href=&quot;https://www.goatcounter.com/&quot;&gt;goatcounter&lt;/a&gt; 的 URL 换过来（过些时候感觉可以写写 isso 和 goatcounter 这两个工具）。以后我应该就会一直用
+&lt;code&gt;ruo-chen.&lt;wbr /&gt;wang&lt;/code&gt; 这个域名了，感觉还可以去弄一个域名邮箱。&lt;/p&gt;
+
+&lt;p&gt;（挖坑 × 2）&lt;/p&gt;</content><author><name>weirane</name></author><category term="Miscellaneous" /><summary type="html">2021-04-18 更新：isso 和 goatcounter 不想写博客了 😂 不过我把配置过程放在我的 wiki 上了 → isso, goatcounter</summary></entry><entry><title type="html">搭建一个 Git 服务器</title><link href="https://blog.ruo-chen.wang/2020/08/git-server.html" rel="alternate" type="text/html" title="搭建一个 Git 服务器" /><published>2020-08-03T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2020/08/git-server</id><content type="html" xml:base="https://blog.ruo-chen.wang/2020/08/git-server.html">&lt;p&gt;本篇将记录我使用 &lt;a href=&quot;https://git-scm.com/book/en/v2/Git-on-the-Server-GitWeb&quot;&gt;gitweb&lt;/a&gt; 和 &lt;a href=&quot;https://nginx.org/&quot;&gt;nginx&lt;/a&gt; 搭建带有网页界面和 HTTP clone 的 Git 服务器的过程。&lt;/p&gt;
+
+&lt;h2 id=&quot;git-服务器&quot;&gt;Git 服务器&lt;/h2&gt;
+
+&lt;p&gt;首先设置能使用 SSH 访问的 Git 服务器，参考 &lt;a href=&quot;https://git-scm.com/book/en/v2/Git-on-the-Server-Setting-Up-the-Server&quot;&gt;Pro Git&lt;/a&gt; 中的说明。先在服务器上添加 &lt;code&gt;git&lt;/code&gt; 用户&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo useradd -m /srv/git git
+sudo passwd git
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后导入本地的 SSH key（需要在 &lt;code&gt;/etc/ssh/sshd_config&lt;/code&gt; 中设置
+&lt;code&gt;Password&lt;wbr /&gt;Authenti&lt;wbr /&gt;cation yes&lt;/code&gt;）&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;ssh-copy-id -i ~/.ssh/id_rsa git@&amp;lt;IP address&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;为了安全禁用 shell 登录&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo chsh git -s $(which git-shell)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;gitweb&quot;&gt;GitWeb&lt;/h2&gt;
+
+&lt;p&gt;Ubuntu 中的 &lt;code&gt;git&lt;/code&gt; 包已经包含了 gitweb 需要的一些静态文件，在 &lt;code&gt;/usr/&lt;wbr /&gt;share/&lt;wbr /&gt;gitweb&lt;/code&gt;
+里面。还需安装的是 &lt;code&gt;highlight&lt;/code&gt; 和 &lt;code&gt;fcgiwrap&lt;/code&gt;。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo apt install highlight fcgiwrap
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在 &lt;code&gt;/etc/gitweb.conf&lt;/code&gt; 中设置 gitweb，其它配置选项可在 &lt;a href=&quot;https://git-scm.com/docs/gitweb.conf&quot; title=&quot;gitweb.conf(5)&quot;&gt;&lt;code&gt;man gitweb.conf&lt;/code&gt;&lt;/a&gt;
+中查看。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-perl&quot;&gt;# path to git projects (&amp;lt;project&amp;gt;.git)
+$projectroot = &quot;/srv/git&quot;;
+
+# directory to use for temp files
+$git_temp = &quot;/tmp&quot;;
+
+# html text to include at home page
+$home_text = &quot;/srv/git/indextext.html&quot;;
+
+# stylesheet to use
+#@stylesheets = (&quot;static/gitweb.css&quot;);
+
+# javascript code for gitweb
+#$javascript = &quot;static/gitweb.js&quot;;
+
+# logo to use
+#$logo = &quot;static/git-logo.png&quot;;
+
+# the 'favicon'
+#$favicon = &quot;static/git-favicon.png&quot;;
+
+# git-diff-tree(1) options to use for generated patches
+#@diff_opts = (&quot;-M&quot;);
+@diff_opts = ();
+
+# 不显示 owner
+$omit_owner = 1;
+
+# 只显示 bare repo 中有 &quot;git-daemon-export-ok&quot; 这个文件的仓库
+$export_ok = &quot;git-daemon-export-ok&quot;;
+
+# 语法高亮（需要 highlight 包）
+$feature{'highlight'}{'default'} = [1];
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;向 &lt;code&gt;/srv/git/indextext.html&lt;/code&gt; 中写入需要在主页中额外添加的文字&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;echo 'My personal git repos' | sudo tee /srv/git/indextext.html
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;添加一个新的 nginx server block&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-nginx&quot;&gt;# /etc/nginx/sites-available/git
+
+server {
+    server_name git.example.com;
+    location /gitweb.cgi {
+        root /usr/share/gitweb;
+        gzip off;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_NAME $uri;
+        fastcgi_param GITWEB_CONFIG /etc/gitweb.conf;
+        fastcgi_pass unix:/var/run/fcgiwrap.socket;
+    }
+    location / {
+        root /usr/share/gitweb;
+        index gitweb.cgi;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最后 enable 并获取一个 SSL 证书&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo ln -sf /etc/nginx/sites-{available,enabled}/git
+sudo certbot --nginx
+sudo systemctl restart nginx
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;http-clone&quot;&gt;HTTP clone&lt;/h2&gt;
+
+&lt;p&gt;目的是允许任何人使用 &lt;code&gt;git clone https://git.example.com/clone/NAME&lt;/code&gt; 对 gitweb 中显示的仓库进行 clone，为此使用 &lt;a href=&quot;https://git-scm.com/docs/git-http-backend&quot;&gt;&lt;code&gt;git-http-backend&lt;/code&gt;&lt;/a&gt;。在
+&lt;code&gt;/etc/nginx/sites-available/git&lt;/code&gt; 的 &lt;code&gt;server&lt;/code&gt; 块中加入&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-nginx&quot;&gt;location ~ /clone(/.*) {
+    client_max_body_size 0;
+    include /etc/nginx/fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME /usr/lib/git-core/git-http-backend;
+    fastcgi_param GIT_PROJECT_ROOT /srv/git;
+    fastcgi_param PATH_INFO $1;
+    fastcgi_pass unix:/var/run/fcgiwrap.socket;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;git-http-backend&lt;/code&gt; 会检查 bare repo 中是否有 &lt;code&gt;git-daemon-export-ok&lt;/code&gt; 这个文件，如果没有则不允许 clone，这正好是 gitweb 配置中表示「公有仓库」使用的文件。如果想对所有的仓库都允许 clone，则可以添加一个 fastcgi param：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-nginx&quot;&gt;    fastcgi_param GIT_HTTP_EXPORT_ALL &quot;&quot;;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个 HTTP clone 只是一个只读的 clone，如果想要 push 还需使用 SSH。&lt;/p&gt;
+
+&lt;h2 id=&quot;结果&quot;&gt;结果&lt;/h2&gt;
+
+&lt;p&gt;创建一个测试仓库并标记为公开，再添加一个说明&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;cd
+git init --bare test.git
+touch test.git/git-daemon-export-ok
+echo 'Test repo' &amp;gt; test.git/description
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;网页效果如下&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/7-git-server/test.git.png&quot; alt=&quot;test.git&quot; width=&quot;646px&quot; class=&quot;align-center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Clone:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-console&quot;&gt;$ git clone https://git.example.com/clone/test
+Cloning into 'test'...
+warning: You appear to have cloned an empty repository.
+
+$ ls -a test
+.git
+&lt;/code&gt;&lt;/pre&gt;</content><author><name>weirane</name></author><category term="Server" /><category term="git" /><category term="gitweb" /><category term="nginx" /><summary type="html">本篇将记录我使用 gitweb 和 nginx 搭建带有网页界面和 HTTP clone 的 Git 服务器的过程。</summary></entry><entry><title type="html">Fcitx5 安装记</title><link href="https://blog.ruo-chen.wang/2020/05/install-fcitx5.html" rel="alternate" type="text/html" title="Fcitx5 安装记" /><published>2020-05-03T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2020/05/install-fcitx5</id><content type="html" xml:base="https://blog.ruo-chen.wang/2020/05/install-fcitx5.html">&lt;p&gt;在 #archlinux-cn 上 fcitx 是个经常被讨论的话题，每次都有人推荐 fcitx5。但是因为只有在 KDE 中有图形化的配置工具就一直没有尝试。今天有人说配置工具 &lt;code&gt;kcm-fcitx5&lt;/code&gt;
+在非 KDE 中也可以安装了，所以来试试。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2021-01-29 更新：&lt;code&gt;kcm-fcitx5&lt;/code&gt; 改名为 &lt;code&gt;fcitx5-configtool&lt;/code&gt;（其实早就改了，只是博
+  客里没更新）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;安装&quot;&gt;安装&lt;/h2&gt;
+
+&lt;p&gt;先卸载 fcitx4：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;pacman -Qsq fcitx | sudo pacman -Rsn -
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;安装 fcitx5：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo pacman -S fcitx5 fcitx5-chinese-addons fcitx5-configtool fcitx5-qt fcitx5-gtk
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Fcitx5 自带的皮肤不是很好看，我还安装了 &lt;a href=&quot;https://github.com/hosxy/Fcitx5-Material-Color&quot;&gt;material-color 皮肤&lt;/a&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo pacman -S fcitx5-material-color
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;配置&quot;&gt;配置&lt;/h2&gt;
+
+&lt;h3 id=&quot;输入法&quot;&gt;输入法&lt;/h3&gt;
+
+&lt;p&gt;有了图形化的配置工具，配置会轻松很多。首先在「输入法」一栏中添加需要的输入法，我使用的是双拼，然后在「附加组件」→「拼音」里面修改双拼方案为小鹤双拼。&lt;/p&gt;
+
+&lt;h3 id=&quot;自动启动与环境变量&quot;&gt;自动启动与环境变量&lt;/h3&gt;
+
+&lt;p&gt;把自动启动 fcitx 的命令改成 &lt;code&gt;fcitx5&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;我使用的图形管理是 X11。使用 fcitx4 的时候在 &lt;code&gt;~/.xprofile&lt;/code&gt; 或者 &lt;code&gt;~/.xinitrc&lt;/code&gt; 中设置的环境变量似乎不需要改成 fcitx5，之前 fcitx 使用的配置可以直接使用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=&quot;@im=fcitx&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;体验&quot;&gt;体验&lt;/h2&gt;
+
+&lt;h3 id=&quot;快捷输入&quot;&gt;快捷输入&lt;/h3&gt;
+
+&lt;p&gt;在输入法激活时使用分号键触发快捷输入。在 &lt;code&gt;/usr/share/fcitx5/data/quickphrase.d&lt;/code&gt;
+中有一些自带的快捷输入，包括 emoji 和一些 LaTeX 命令，可以转换部分 LaTeX 命令到对应的 unicode 字符，这个功能非常实用，可以让 LaTeX 文档更直观。当然也可以在配置工具中自定义快捷输入。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/6-install-fcitx5/emoji.png&quot; alt=&quot;emoji quick phrase&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/6-install-fcitx5/quickphrase.png&quot; alt=&quot;LaTeX quick phrase&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;单行模式&quot;&gt;单行模式&lt;/h3&gt;
+
+&lt;p&gt;Fcitx5 自带的拼音可以使用单行模式，配合 material color 主题体验很好，有点
+Windows 10 自带输入法的感觉。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/6-install-fcitx5/blue.png&quot; alt=&quot;material color blue&quot; /&gt;&lt;sup id=&quot;fnref:mc-fig&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:mc-fig&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+
+&lt;p&gt;对于自带的拼音，在配置工具的「附加组件」→「拼音」中打开「可用时在应用程序中显示预编辑文本」，或者直接修改 &lt;code&gt;~/.config/fcitx5/conf/pinyin.conf&lt;/code&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;# 可用时在应用程序中显示预编辑文本
+PreeditInApplicaation=True
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可惜单行模式对使用 XIM 的程序不能使用 &lt;sup id=&quot;fnref:no-xim&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:no-xim&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;，而我用的终端模拟器 alacritty 正好是使用的 XIM 😥&lt;sup id=&quot;fnref:alacritty-xim&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:alacritty-xim&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;。不过单行模式算不上是刚需，也就无所谓了。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;总的来说，fcitx5 的体验比 4 要好一些。配置选项简洁，配合 material color 皮肤界面也比较好看。&lt;del&gt;也可能只是我没有仔细研究 fcitx4 的配置&lt;/del&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:mc-fig&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;图片来自 material color 的 &lt;a href=&quot;https://github.com/hosxy/Fcitx5-Material-Color&quot;&gt;GitHub 仓库&lt;/a&gt;，使用 imagemagick
+加了透明（&lt;a href=&quot;https://stackoverflow.com/a/33541007/10974106&quot;&gt;https://stackoverflow.com/a/33541007/10974106&lt;/a&gt;）&lt;/p&gt;
+      &lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;convert blue.png -fuzz 20% -fill none -draw &quot;color 1,1 floodfill&quot; result.png
+&lt;/code&gt;&lt;/pre&gt;
+      &lt;p&gt;&lt;a href=&quot;#fnref:mc-fig&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:no-xim&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://github.com/fcitx/fcitx5-chinese-addons/issues/3&quot;&gt;https://github.com/fcitx/fcitx5-chinese-addons/issues/3&lt;/a&gt; &lt;a href=&quot;#fnref:no-xim&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:alacritty-xim&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://github.com/alacritty/alacritty/issues/44&quot;&gt;https://github.com/alacritty/alacritty/issues/44&lt;/a&gt; &lt;a href=&quot;#fnref:alacritty-xim&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>weirane</name></author><category term="Tools" /><category term="fcitx" /><category term="imagemagick" /><summary type="html">在 #archlinux-cn 上 fcitx 是个经常被讨论的话题，每次都有人推荐 fcitx5。但是因为只有在 KDE 中有图形化的配置工具就一直没有尝试。今天有人说配置工具 kcm-fcitx5 在非 KDE 中也可以安装了，所以来试试。</summary></entry><entry><title type="html">将 Caps Lock 映射为 Escape 和 Ctrl</title><link href="https://blog.ruo-chen.wang/2020/04/map-capslock-to-esc-and-ctrl.html" rel="alternate" type="text/html" title="将 Caps Lock 映射为 Escape 和 Ctrl" /><published>2020-04-04T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2020/04/map-capslock-to-esc-and-ctrl</id><content type="html" xml:base="https://blog.ruo-chen.wang/2020/04/map-capslock-to-esc-and-ctrl.html">&lt;p&gt;Caps Lock 可能是键盘上最没有用的一个键了，但是它又占据了 home row 的位置。一些人会把它映射成 Escape 或者 Ctrl。但是作为一个 Vim 用户，Escape 和 Ctrl 都是很常用的键。如何让 Caps Lock 在单击的时候是 Escape，和其它键配合的时候是 Ctrl？&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;TL; DR:&lt;/strong&gt; 见 &lt;a href=&quot;#总结&quot;&gt;总结&lt;/a&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2020-11-15 更新：扩充 &lt;a href=&quot;#xmodmap&quot;&gt;Xmodmap&lt;/a&gt; 一节&lt;/li&gt;
+  &lt;li&gt;2020-04-08 更新：增加了 &lt;a href=&quot;#xcape&quot;&gt;XCAPE&lt;/a&gt; 和 &lt;a href=&quot;#总结&quot;&gt;总结&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;2021-01-27 更新：增加了 TL; DR&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;之前的配置&quot;&gt;之前的配置&lt;/h2&gt;
+
+&lt;p&gt;这里有一些将 Caps Lock 只映射成 Ctrl 的方法。&lt;/p&gt;
+
+&lt;h3 id=&quot;xmodmap&quot;&gt;Xmodmap&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;/2020/01/switch-from-gnome-to-i3.html#remap-capslock&quot;&gt;以前&lt;/a&gt; 有写过使用 xmodmap 将 Caps Lock 变为 Ctrl 的方法，但是这个方法不能让单击 Caps Lock 时产生 Escape 的效果。做法是将以下内容写入文件，比如存放在 &lt;code&gt;~/.config/X11/Xmodmap&lt;/code&gt;，然后在启动的时候运行 &lt;code&gt;xmodmap ~/.config/X11/Xmodmap&lt;/code&gt;。这种方法需要在启动图形界面时和连接新键盘时重新执行以上的命令。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;clear lock
+clear control
+add control = Caps_Lock Control_L Control_R
+keycode 66 = Control_L Control_L Control_L Control_L
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;setxkbmap-命令&quot;&gt;setxkbmap 命令&lt;/h3&gt;
+
+&lt;p&gt;使用下面的命令可将 Caps Lock 映射成 Ctrl，和 Xmodmap 一样需要在启动图形界面时和连接新键盘时重新运行命令。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;setxkbmap -option ctrl:nocaps
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;hwdb&quot;&gt;hwdb&lt;/h3&gt;
+
+&lt;p&gt;前两个方法的问题之一是它只对 X 有效，到了 tty 中就不起作用了。有一个更加底层的方法是使用 hwdb。参考 &lt;a href=&quot;https://wiki.archlinux.org/index.php/Map_scancodes_to_keycodes&quot; title=&quot;Map scancodes to keycodes&quot;&gt;Arch Wiki&lt;/a&gt;，对笔记本内置的键盘可以将以下的内容写入 &lt;code&gt;/etc/udev/hwdb.d/xxx.hwdb&lt;/code&gt; 中&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;evdev:atkbd:dmi:*
+ KEYBOARD_KEY_3a=leftctrl  # Caps Lock down as Left Ctrl
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;运行以下命令生效&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo systemd-hwdb update
+sudo udevadm trigger
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果 hwdb 可以对连续的几个 scancode 进行设置的话也许可以达成映射 Caps Lock 为
+Escape 和 Ctrl 的目标，但是好像并不行，reddit 上有一个 &lt;a href=&quot;https://www.reddit.com/r/archlinux/comments/9s7569/map_caps_lock_to_escape_and_control_using_udev/&quot;&gt;帖子&lt;/a&gt;
+也一直没有人给出解决方法。&lt;/p&gt;
+
+&lt;h2 id=&quot;可行的方法&quot;&gt;可行的方法&lt;/h2&gt;
+
+&lt;h3 id=&quot;interception-tool&quot;&gt;Interception Tool&lt;/h3&gt;
+
+&lt;p&gt;使用 &lt;a href=&quot;https://gitlab.com/interception/linux/tools&quot;&gt;Interception Tool&lt;/a&gt; 配合插件 &lt;a href=&quot;https://gitlab.com/interception/linux/plugins/caps2esc&quot;&gt;caps2esc&lt;/a&gt;。安装这两个 AUR 包或者去主页上查看安装方法。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;yay -S interception-tools interception-caps2esc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;将以下内容写入 &lt;code&gt;/etc/udevmon.yaml&lt;/code&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-yaml&quot;&gt;- JOB: &quot;intercept -g $DEVNODE | caps2esc | uinput -d $DEVNODE&quot;
+  DEVICE:
+    EVENTS:
+      EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;运行并自动启动 &lt;code&gt;udevmon&lt;/code&gt;：&lt;code&gt;sudo systemctl enable --now udevmon&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;如此配置之后 Caps Lock 在单击的时候会变成 Escape，做为组合键的时候是 Ctrl。同时原来的 Escape 键变成了 Caps Lock。&lt;/p&gt;
+
+&lt;p&gt;但是我不想让 Escape 映射成 Caps Lock，研究了 &lt;code&gt;caps2esc&lt;/code&gt; 的源码后发现只要将替换
+ESC 的 &lt;code&gt;code&lt;/code&gt; 那两行删除即可，如下。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-diff&quot;&gt;diff --git a/caps2esc.c b/caps2esc.c
+index e9e29b6..d3641f2 100644
+--- a/caps2esc.c
++++ b/caps2esc.c
+@@ -77,8 +77,6 @@ int main(void) {
+             continue;
+         }
+ 
+-        if (input.code == KEY_ESC)
+-            input.code = KEY_CAPSLOCK;
+         write_event(&amp;amp;input);
+     }
+ }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;安装新编译出来的 &lt;code&gt;caps2esc&lt;/code&gt; 再 &lt;code&gt;sudo systemctl restart udevmon&lt;/code&gt; 即可。&lt;/p&gt;
+
+&lt;p&gt;这里注意一定不要把下面的 &lt;code&gt;write_event(&amp;amp;input);&lt;/code&gt; 删掉了，否则会让所有的键都没反应
+，重启也没有用，因为 &lt;code&gt;udevmon&lt;/code&gt; 会自动启动。最后得想办法删掉
+&lt;code&gt;/etc/systemd/system/multi-user.target.wants/udevmon.service&lt;/code&gt; 以取消自动启动
+&lt;code&gt;udevmon&lt;/code&gt;，比如用 Live USB 或者 SSH 到主机。（不要问我是怎么知道的）&lt;/p&gt;
+
+&lt;p&gt;此时如果需要触发 Caps Lock 键（比如 Caps Lock 不知为什么被打开了），只能先将
+&lt;code&gt;udevmon&lt;/code&gt; 停止再按 Caps Lock。为了方便我给 &lt;code&gt;caps2esc&lt;/code&gt; 加了一个 signal handler，当收到 &lt;code&gt;SIGUSR1&lt;/code&gt; 的时候触发 Caps Lock，这样需要的时候可以直接 &lt;code&gt;sudo killall
+-USR1 caps2esc&lt;/code&gt;。&lt;a href=&quot;https://github.com/weirane/caps2esc&quot;&gt;源代码&lt;/a&gt; 放在了 GitHub 上，还有一个对应的 AUR 包
+&lt;code&gt;intercept-caps2esc-nocaps-git&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3 id=&quot;xcape&quot;&gt;XCAPE&lt;/h3&gt;
+
+&lt;p&gt;&lt;del&gt;果然每次写完一篇博客后都会发现一些其它的解决方案&lt;/del&gt;&lt;/p&gt;
+
+&lt;p&gt;如果对在 tty 中的映射没有要求的话，还可以使用 &lt;a href=&quot;https://github.com/alols/xcape&quot;&gt;XCAPE&lt;/a&gt; 工具。XCAPE 的主要功能是对
+modifier key 按下后直接弹起的动作进行映射。可以先使用 &lt;a href=&quot;#之前的配置&quot;&gt;之前&lt;/a&gt; 说的方法映射 Caps Lock 为 Ctrl，再使用 XCAPE 将按下 Ctrl 再直接弹起映射为 Escape：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;xcape -e 'Control_L=Escape'
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;启动图形界面时运行此命令。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;只想在 X 中映射 Caps Lock 到 Ctrl 和 Escape：使用 Xmodmap 或者 setxkbmap 加上 &lt;a href=&quot;https://github.com/alols/xcape&quot;&gt;XCAPE&lt;/a&gt;；&lt;/li&gt;
+  &lt;li&gt;在 tty 中也映射：使用 &lt;a href=&quot;https://gitlab.com/interception/linux/tools&quot;&gt;interception tools&lt;/a&gt;；&lt;/li&gt;
+  &lt;li&gt;在 X 中映射到 Ctrl 和 Escape，tty 中只映射到 Ctrl：使用 hwdb 和 &lt;a href=&quot;https://github.com/alols/xcape&quot;&gt;XCAPE&lt;/a&gt;。&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>weirane</name></author><category term="Tweaks" /><category term="keyboard" /><summary type="html">Caps Lock 可能是键盘上最没有用的一个键了，但是它又占据了 home row 的位置。一些人会把它映射成 Escape 或者 Ctrl。但是作为一个 Vim 用户，Escape 和 Ctrl 都是很常用的键。如何让 Caps Lock 在单击的时候是 Escape，和其它键配合的时候是 Ctrl？</summary></entry><entry><title type="html">合并挂载在 `/` 和 `/home` 的分区</title><link href="https://blog.ruo-chen.wang/2020/02/combine-two-partitions.html" rel="alternate" type="text/html" title="合并挂载在 `/` 和 `/home` 的分区" /><published>2020-02-19T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2020/02/combine-two-partitions</id><content type="html" xml:base="https://blog.ruo-chen.wang/2020/02/combine-two-partitions.html">&lt;p&gt;最近需要装一个很大的虚拟机，在导入 VirtualBox 的时候出现了「&lt;code&gt;NS_ERROR_INVALID_ARG (0x80070057)&lt;/code&gt;」这个错误，上网查发现是因为硬盘空间不足。我的硬盘有 67G 的空闲空间，但是因为把 &lt;code&gt;/home&lt;/code&gt; 单独分了一个分区，两个分区每个都有 30G 左右的剩余空间，无法充分利用。我的 &lt;code&gt;/&lt;/code&gt; 和 &lt;code&gt;/home&lt;/code&gt; 对应的分区是相连的，合并较为方便，便打算将这两个分区合并起来。以下是 &lt;code&gt;df&lt;/code&gt;&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; 的结果：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-console&quot;&gt;$ df
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p6   81G   47G   30G  61% /
+/dev/nvme0n1p8   53G   13G   37G  26% /home
+/dev/nvme0n1p1  256M   30M  227M  12% /boot/efi
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
+&lt;p&gt;两年前第一次尝试 Linux 的时候我将 Linux 安装在了一个移动硬盘上。这种情况文件系统损坏的可能性比较大，所以将 &lt;code&gt;/&lt;/code&gt; 和 &lt;code&gt;/home&lt;/code&gt; 分开是有好处的，因为如果 &lt;code&gt;/&lt;/code&gt; 所在的分区出现了故障 &lt;code&gt;/home&lt;/code&gt; 中的个人文件不会受影响。&lt;/p&gt;
+
+&lt;p&gt;所以后来在内置硬盘上安装 Linux 的时候也将 &lt;code&gt;/home&lt;/code&gt; 单独分了一个分区，但是对于内置硬盘分区出现故障还是不太容易发生的。分成两个分区之后就得比较小心，否则一个分区空间不够时另一个分区也帮不上忙；或者出现上述的情况，整个硬盘的空闲空间足够，但是分开后不够。（256G 硬盘的悲伤）&lt;/p&gt;
+
+&lt;h2 id=&quot;过程&quot;&gt;过程&lt;/h2&gt;
+&lt;h3 id=&quot;备份&quot;&gt;备份&lt;/h3&gt;
+&lt;p&gt;对于改分区这种危险操作，事前进行备份总是没有错的。使用 &lt;code&gt;rsync&lt;/code&gt; 备份家目录到一个移动硬盘，可以把一些 cache 之类的目录排除，&lt;code&gt;rsync&lt;/code&gt; 具体的用法参考 &lt;a href=&quot;https://man.archlinux.org/man/extra/rsync/rsync.1&quot; title=&quot;rsync(1)&quot;&gt;&lt;code&gt;man rsync&lt;/code&gt;&lt;/a&gt;。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;sudo rsync -aAXvu --delete \
+    &quot;$HOME&quot; &quot;/mnt/point/of/external/drive/home&quot; \
+    --exclude=...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;此命令也可以用于定期备份。&lt;/p&gt;
+
+&lt;h3 id=&quot;迁移&quot;&gt;迁移&lt;/h3&gt;
+&lt;p&gt;由于需要操作 &lt;code&gt;/home&lt;/code&gt;，在登录一般用户的时候会无法将其 &lt;code&gt;umount&lt;/code&gt;，所以得用 root 账号登录。为此我把我的登录管理器 &lt;code&gt;lightdm&lt;/code&gt; disable 掉&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;sudo systemctl disable lightdm
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;重新启动后便进入了 tty1，输入 root 的用户名和密码，然后将挂载在 &lt;code&gt;/home&lt;/code&gt; 的分区挂载到另一个目录上，再使用 &lt;code&gt;rsync&lt;/code&gt; 同步：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;umount /home
+mkdir /mnt/home
+mount /dev/nvme0n1p8 /mnt/home
+rsync -aAXuv /mnt/home/wang /home
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;合并分区&quot;&gt;合并分区&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;rsync&lt;/code&gt; 同步完成之后就需要修改分区了。此时可以直接使用 &lt;code&gt;fdisk&lt;/code&gt; 或者其它的命令行工具修改，但是我还是想稳一点，用 Gparted 来修改，顺便测试一下登录一般用户会不会出现问题。使用 &lt;code&gt;Ctrl&lt;/code&gt;+&lt;code&gt;Alt&lt;/code&gt;+&lt;code&gt;F2&lt;/code&gt; 切到 tty2，登录一般用户并运行 &lt;code&gt;startx&lt;/code&gt; 启动图形界面（我用的是 i3，不同的配置及不同的桌面环境的启动方式可能会有不同），此时可以看看家目录中的文件是否正常，然后利用 Gparted 删除 &lt;code&gt;/home&lt;/code&gt; 对应的分区，再扩展 &lt;code&gt;/&lt;/code&gt; 的分区。&lt;/p&gt;
+
+&lt;p&gt;改完分区后可以确认一下 &lt;code&gt;/etc/fstab&lt;/code&gt; 有没有问题，如果 &lt;code&gt;/home&lt;/code&gt; 在上面的话应该将这一行删掉，否则可能出现挂载失败而进入 rescue mode 的情况。&lt;/p&gt;
+
+&lt;h3 id=&quot;完成&quot;&gt;完成&lt;/h3&gt;
+&lt;p&gt;分区修改好之后登出，回到 tty1 将登录管理器重新 enable 便可重启。&lt;/p&gt;
+
+&lt;h2 id=&quot;结果&quot;&gt;结果&lt;/h2&gt;
+&lt;p&gt;成功 🎉&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-console&quot;&gt;$ df
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p6  133G   60G   68G  47% /
+/dev/nvme0n1p1  256M   30M  227M  12% /boot/efi
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;hr /&gt;
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;这里的 &lt;code&gt;df&lt;/code&gt; 是一个小函数，见我的 &lt;a href=&quot;https://github.com/weirane/dotfiles/blob/2cab6e6/zsh/functions.zsh#L22&quot;&gt;dotfiles 仓库&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>weirane</name></author><category term="Tweaks" /><category term="partition" /><category term="rsync" /><summary type="html">最近需要装一个很大的虚拟机，在导入 VirtualBox 的时候出现了「NS_ERROR_INVALID_ARG (0x80070057)」这个错误，上网查发现是因为硬盘空间不足。我的硬盘有 67G 的空闲空间，但是因为把 /home 单独分了一个分区，两个分区每个都有 30G 左右的剩余空间，无法充分利用。我的 / 和 /home 对应的分区是相连的，合并较为方便，便打算将这两个分区合并起来。以下是 df1 的结果： 这里的 df 是一个小函数，见我的 dotfiles 仓库 &amp;#8617;</summary></entry><entry><title type="html">从 GNOME 迁移到 i3</title><link href="https://blog.ruo-chen.wang/2020/01/switch-from-gnome-to-i3.html" rel="alternate" type="text/html" title="从 GNOME 迁移到 i3" /><published>2020-01-16T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2020/01/switch-from-gnome-to-i3</id><content type="html" xml:base="https://blog.ruo-chen.wang/2020/01/switch-from-gnome-to-i3.html">&lt;p&gt;本文记录一下在我的 Manjaro 上从 GNOME 迁移到 &lt;a href=&quot;https://github.com/Airblader/i3&quot;&gt;i3-gaps&lt;/a&gt; 的经历，也可以为在其它 Arch 系发行版上安装 i3-gaps 提供一些参考。i3 是一种平铺窗口管理器（tiling window manager）。我在本机安装 i3 之前先在虚拟机上尝试了一下 &lt;a href=&quot;https://manjaro.org/download/#i3&quot;&gt;Manjaro 的 i3 edition&lt;/a&gt; 以熟悉一下 i3 的 key bindings，以下在配置时有所参考它的默认配置。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2020-05-13 更新：增加了 &lt;a href=&quot;#gnome-keyring-自动解锁&quot;&gt;GNOME Keyring 自动解锁&lt;/a&gt; 一节。&lt;/li&gt;
+  &lt;li&gt;2020-04-11 更新：增加了 &lt;a href=&quot;#qq&quot;&gt;QQ&lt;/a&gt; 一节。&lt;/li&gt;
+  &lt;li&gt;2020-03-01 更新：增加了 &lt;a href=&quot;#暖色屏幕night-shift&quot;&gt;暖色屏幕（night shift）&lt;/a&gt; 一节。&lt;/li&gt;
+  &lt;li&gt;2020-01-23 更新：增加了 &lt;a href=&quot;#多显示器&quot;&gt;多显示器&lt;/a&gt; 一节。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;安装&quot;&gt;安装&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;i3-wm&lt;/code&gt; 和 &lt;code&gt;i3-gaps&lt;/code&gt; 这两个包都提供 i3 window manager，而且它们互相冲突。由于我在虚拟机中体验的是 &lt;code&gt;i3-gaps&lt;/code&gt; 所以这里就用了 &lt;code&gt;i3-gaps&lt;/code&gt; 这个版本。&lt;/p&gt;
+
+&lt;p&gt;使用 &lt;code&gt;pacman&lt;/code&gt; 安装 &lt;code&gt;i3-gaps&lt;/code&gt;。安装之后在目录 &lt;code&gt;/usr/share/xsessions&lt;/code&gt; 中会出现 &lt;code&gt;i3.desktop&lt;/code&gt;，直接重启即可在 gdm 菜单中看到 &lt;code&gt;i3&lt;/code&gt;，选择它再输入密码登录即可进入 i3。 Gdm 是在安装 GNOME 的时候安装的，也可以选择其它的登录管理器。&lt;/p&gt;
+
+&lt;p&gt;再安装一些基本的程序，如 &lt;code&gt;dmenu&lt;/code&gt; 或者 &lt;code&gt;dmenu-manjaro&lt;/code&gt;（推荐），终端和顶栏。我使用的终端是 &lt;a href=&quot;https://github.com/thestinger/termite&quot;&gt;termite&lt;/a&gt;，顶栏是 &lt;a href=&quot;https://github.com/polybar/polybar&quot;&gt;polybar&lt;/a&gt;。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;由于没有图形化的菜单，所以 i3 中的配置基本上都是手写配置文件。我的 i3 配置文件 &lt;code&gt;~/.config/i3/config&lt;/code&gt; 是在 Manjaro i3 edition 的默认配置基础上修改的。&lt;/p&gt;
+
+&lt;h2 id=&quot;软件配置&quot;&gt;软件配置&lt;/h2&gt;
+&lt;h3 id=&quot;fcitx&quot;&gt;fcitx&lt;/h3&gt;
+&lt;p&gt;需要将 fcitx 加入自动启动的程序中，因为 GNOME 会自动启动 fcitx 而 i3 不会。需要注意的是如果使用 vim 的 &lt;code&gt;fcitx.vim&lt;/code&gt; 插件的话不能以 root 的身份启动 fcitx（如将 &lt;code&gt;fcitx&lt;/code&gt; 命令放在 &lt;code&gt;~/.xprofile&lt;/code&gt; 中），不然打开 vim 时出现 &lt;code&gt;fcitx.vim&lt;/code&gt; 插件报错：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;socket file of fcitx not found, fcitx.vim not loaded.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;原因是 &lt;code&gt;/tmp/fcitx-socket-:1&lt;/code&gt; 这个 socket 的所有者是 root，&lt;code&gt;fcitx.vim&lt;/code&gt; 对它没有写权限。启动命令最好放在 i3 的配置文件中，即在 &lt;code&gt;~/.config/i3/config&lt;/code&gt; 中加入：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;exec --no-startup-id fcitx
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;gnome-keyring-自动解锁&quot;&gt;GNOME Keyring 自动解锁&lt;/h3&gt;
+&lt;p&gt;如果使用 &lt;code&gt;startx&lt;/code&gt; 启动 i3，那么需要额外的配置来使 GNOME Keyring 自动解锁。根据 &lt;a href=&quot;https://wiki.archlinux.org/index.php/GNOME/Keyring#Console_login&quot;&gt;Arch Wiki&lt;/a&gt;，自动解锁需要使用其中的「PAM method」。修改文件 &lt;code&gt;/etc/pam.d/login&lt;/code&gt;，将&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;auth optional pam_gnome_keyring.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;加入 &lt;code&gt;auth&lt;/code&gt; section 的末尾，再将&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;session optional pam_gnome_keyring.so auto_start
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;加入 &lt;code&gt;session&lt;/code&gt; section 的末尾。然后将以下内容加入 &lt;code&gt;~/.xinitrc&lt;/code&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;eval &quot;$(/usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh)&quot;
+export SSH_AUTH_SOCK
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;设置墙纸&quot;&gt;设置墙纸&lt;/h3&gt;
+&lt;p&gt;可以使用 &lt;code&gt;feh&lt;/code&gt; 来设置墙纸，使用命令&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;feh --bg-fill &amp;lt;image file&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在 i3 启动时自动执行该命令即可。&lt;/p&gt;
+
+&lt;h3 id=&quot;notify-send&quot;&gt;notify-send&lt;/h3&gt;
+&lt;p&gt;使用 &lt;code&gt;notify-send&lt;/code&gt; 发现并没有显示通知。此时需要安装一个 &lt;a href=&quot;https://wiki.archlinux.org/index.php/Desktop_notifications#Notification_servers&quot;&gt;notification daemon&lt;/a&gt;，我选的是 &lt;code&gt;dunst&lt;/code&gt;。将它加入 i3 自动启动的程序中或者利用 &lt;code&gt;systemd&lt;/code&gt; 自动启动即可。&lt;/p&gt;
+
+&lt;h3 id=&quot;termite-透明背景&quot;&gt;Termite 透明背景&lt;/h3&gt;
+&lt;p&gt;使用 termite 的透明背景功能需要安装 &lt;code&gt;xcompmgr&lt;/code&gt; 并让它自动启动。&lt;/p&gt;
+
+&lt;h3 id=&quot;设置-xdg-open-使用的程序&quot;&gt;设置 xdg-open 使用的程序&lt;/h3&gt;
+&lt;p&gt;参考 &lt;a href=&quot;https://wiki.archlinux.org/index.php/XDG_MIME_Applications&quot;&gt;Arch Wiki&lt;/a&gt;，修改 &lt;code&gt;~/.config/mimeapps.list&lt;/code&gt;（没有就创建该文件），如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-ini&quot;&gt;[Default Applications]
+application/pdf=org.pwmt.zathura.desktop
+image/png=sxiv.desktop
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;截图&quot;&gt;截图&lt;/h3&gt;
+&lt;p&gt;使用 &lt;code&gt;scrot&lt;/code&gt;。写一个脚本以支持不同的使用方式并使用 &lt;code&gt;zenity&lt;/code&gt; 选择保存位置，如 &lt;a href=&quot;https://github.com/weirane/dotfiles/blob/33edd42a3c/dotconfig/i3/scripts/screenshot.sh&quot;&gt;这个脚本&lt;/a&gt;。并在 &lt;code&gt;~/.config/i3/config&lt;/code&gt; 中添加：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;bindsym Print exec --no-startup-id /path/to/screenshot.sh --whole
+bindsym $mod+Shift+Print exec --no-startup-id /path/to/screenshot.sh --window
+bindsym Shift+Print --release exec --no-startup-id /path/to/screenshot.sh --select
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样的效果是使用 &lt;code&gt;PrtSc&lt;/code&gt; 截取全屏，&lt;code&gt;Shift&lt;/code&gt;+&lt;code&gt;PrtSc&lt;/code&gt; 截取一个区域，&lt;code&gt;Super&lt;/code&gt;+&lt;code&gt;Shift&lt;/code&gt;+&lt;code&gt;PrtSc&lt;/code&gt; 截取当前的窗口。&lt;/p&gt;
+
+&lt;h3 id=&quot;挂载&quot;&gt;挂载&lt;/h3&gt;
+&lt;p&gt;在 i3 中没有自带 GNOME 中插入 U 盘自动挂载的功能，不过可以利用 dmenu 写一个选择并挂载 drive 的脚本 &lt;a href=&quot;https://github.com/weirane/dotfiles/blob/33edd42a3c/dotconfig/i3/scripts/mount.sh&quot;&gt;(link)&lt;/a&gt;，再给这个脚本绑定一个快捷键即可。&lt;/p&gt;
+
+&lt;h3 id=&quot;图片和-pdf-阅读器&quot;&gt;图片和 PDF 阅读器&lt;/h3&gt;
+&lt;p&gt;由于从 GNOME 3.32 开始一些 GNOME 应用的标题栏变得很厚，evince 和 gthumb 在 i3 这种平铺窗口管理器下有一个很高的标题栏，所以打算换一个阅读器。选择的图片阅读器是 &lt;a href=&quot;https://github.com/muennich/sxiv&quot;&gt;sxiv&lt;/a&gt;，PDF 阅读器是 &lt;a href=&quot;https://pwmt.org/projects/zathura/&quot;&gt;zathura&lt;/a&gt;。对应的配置文件在我的 &lt;a href=&quot;https://github.com/weirane/dotfiles/blob/master/dotconfig/&quot;&gt;dotfiles&lt;/a&gt; 仓库里。&lt;/p&gt;
+
+&lt;h3 id=&quot;qq&quot;&gt;QQ&lt;/h3&gt;
+&lt;p&gt;在 GNOME 使用 QQ 我是用的 &lt;code&gt;archlinuxcn/deepin.com.qq.office&lt;/code&gt; 这个包。但是在 i3 中启动时会报 &lt;code&gt;X Error of failed request&lt;/code&gt;，解决方法是安装 &lt;code&gt;xsettingsd&lt;/code&gt;，将其挂在后台再启动 QQ。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;xsettingsd&lt;/code&gt; 的配置文件可以通过先运行 &lt;code&gt;/usr/lib/gsd-xsettings&lt;/code&gt; 再使用 &lt;code&gt;xsettingsd&lt;/code&gt; 自带的 &lt;code&gt;dump_xsettings&lt;/code&gt; 命令获取，将命令的输出写入 &lt;code&gt;~/.config/xsettingsd/xsettingsd.conf&lt;/code&gt;，然后将以 &lt;code&gt;Gtk&lt;/code&gt; 或 &lt;code&gt;Gdk&lt;/code&gt; 开头的行全部删除。&lt;/p&gt;
+
+&lt;h2 id=&quot;硬件相关&quot;&gt;硬件相关&lt;/h2&gt;
+&lt;h3 id=&quot;连接-wifi蓝牙&quot;&gt;连接 WiFi、蓝牙&lt;/h3&gt;
+&lt;p&gt;安装 &lt;code&gt;network-manager-applet&lt;/code&gt; 和 &lt;code&gt;blueman&lt;/code&gt;，再设置自动启动 &lt;code&gt;nm-applet&lt;/code&gt; 和 &lt;code&gt;blueman-applet&lt;/code&gt; 即可，重新登录（或者手动启动这两个程序）即可在系统托盘看到对应的菜单。&lt;/p&gt;
+
+&lt;p&gt;开机时自动打开蓝牙：编辑文件 &lt;code&gt;/etc/bluetooth/main.conf&lt;/code&gt;，将 &lt;code&gt;[Policy]&lt;/code&gt; 一节中的 &lt;code&gt;AutoEnable&lt;/code&gt; 设置为 true：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-ini&quot;&gt;[Policy]
+AutoEnable=true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;disable-beeps&quot;&gt;Disable beeps&lt;/h3&gt;
+&lt;p&gt;根据 &lt;a href=&quot;https://wiki.archlinux.org/index.php/PC_speaker#Disable_PC_Speaker&quot;&gt;Arch Wiki&lt;/a&gt;，使用命令&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;sudo rmmod pcspkr
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;或者把此设置永久化：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-sh&quot;&gt;echo &quot;blacklist pcspkr&quot; | sudo tee /etc/modprobe.d/nobeep.conf
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;remap-capslock&quot;&gt;Remap CapsLock&lt;/h3&gt;
+&lt;p&gt;我一般会将 CapsLock 键映射成 Ctrl 键，可以利用 &lt;code&gt;~/.Xmodmap&lt;/code&gt; 文件进行设置：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;clear lock
+clear control
+add control = Caps_Lock Control_L Control_R
+keycode 66 = Control_L Control_L Control_L Control_L
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后在 &lt;code&gt;~/.xinitrc&lt;/code&gt; 中加入 &lt;code&gt;xmodmap ~/.Xmodmap&lt;/code&gt;。这样设置之后就无法通过键盘中的某一个键实现 CapsLock 了，如果需要的话可以使用 &lt;code&gt;xdotool key Caps_Lock&lt;/code&gt; 命令来触发。&lt;/p&gt;
+
+&lt;div class=&quot;notice--info&quot;&gt;
+  &lt;p&gt;&lt;i class=&quot;fas fa-exclamation-circle&quot;&gt;&lt;/i&gt; &lt;strong&gt;注意！&lt;/strong&gt;&lt;/p&gt;
+
+  &lt;p&gt;用这种方法对执行 &lt;code&gt;xmodmap&lt;/code&gt; 命令后连接的键盘没有效果。经过一番调研&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;sup&gt;,&lt;/sup&gt;&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;，一个解决方案是使用 &lt;code&gt;inotifywait&lt;/code&gt; 监控 &lt;code&gt;/dev/input&lt;/code&gt; 中的新设备并在有新设备时执行 &lt;code&gt;xmodmap&lt;/code&gt; 命令，写一个 &lt;a href=&quot;https://github.com/weirane/dotfiles/blob/master/dotconfig/i3/scripts/xmodmap-on-new-input.sh&quot;&gt;脚本&lt;/a&gt; 并设置自动启动即可。&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;触摸板相关&quot;&gt;触摸板相关&lt;/h3&gt;
+&lt;p&gt;目标：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;轻拍触摸板相当于按键&lt;/li&gt;
+  &lt;li&gt;触摸板自然滚动（natrual scrolling）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;参考 &lt;a href=&quot;https://cravencode.com/post/essentials/enable-tap-to-click-in-i3wm/&quot;&gt;这里&lt;/a&gt;，将以下内容写入文件 &lt;code&gt;/etc/X11/xorg.conf.d/90-touchpad.conf&lt;/code&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Section &quot;InputClass&quot;
+        Identifier &quot;touchpad&quot;
+        MatchIsTouchpad &quot;on&quot;
+        Driver &quot;libinput&quot;
+        Option &quot;Tapping&quot; &quot;on&quot;
+        Option &quot;TappingButtonMap&quot; &quot;lrm&quot;
+        Option &quot;NaturalScrolling&quot; &quot;on&quot;
+        Option &quot;ScrollMethod&quot; &quot;twofinger&quot;
+EndSection
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;重启或注销再登录即可看到效果。&lt;/p&gt;
+
+&lt;h3 id=&quot;多显示器&quot;&gt;多显示器&lt;/h3&gt;
+&lt;p&gt;配置多个显示器可以使用 &lt;a href=&quot;https://wiki.archlinux.org/index.php/Xrandr&quot;&gt;&lt;code&gt;xrandr&lt;/code&gt;&lt;/a&gt; 工具。图形化的配置工具可以使用 &lt;code&gt;arandr&lt;/code&gt; 这个包。&lt;/p&gt;
+
+&lt;h3 id=&quot;暖色屏幕night-shift&quot;&gt;暖色屏幕（night shift）&lt;/h3&gt;
+&lt;p&gt;在晚上将屏幕颜色调成偏暖眼睛看得舒服些。在 GNOME 中内置了这个功能，在 i3 中可以安装 &lt;a href=&quot;https://wiki.archlinux.org/index.php/Redshift&quot;&gt;&lt;code&gt;redshift&lt;/code&gt;&lt;/a&gt; 来达到相同的效果。安装后可通过 &lt;code&gt;systemd&lt;/code&gt; 自动开启，使用&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;systemctl --user enable redshift
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;或者如果想要状态栏的图标：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;systemctl --user enable redshift-gtk
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;锁屏&quot;&gt;锁屏&lt;/h3&gt;
+&lt;p&gt;想要达到以下的效果：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;定时锁定&lt;/li&gt;
+  &lt;li&gt;合上屏幕自动锁定&lt;/li&gt;
+  &lt;li&gt;锁屏后短时间黑屏&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;利用 &lt;code&gt;xset&lt;/code&gt;，&lt;code&gt;xss-lock&lt;/code&gt; 配合锁屏工具 &lt;code&gt;i3lock&lt;/code&gt;。&lt;code&gt;xset&lt;/code&gt; 用于设置屏幕黑暗时间，&lt;code&gt;xss-lock&lt;/code&gt; 可以监控 &lt;a href=&quot;https://wiki.archlinux.org/index.php/Display_Power_Management_Signaling&quot;&gt;DPMS&lt;/a&gt; 信号并自动执行锁屏程序。在 i3 配置文件中加入&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;exec --no-startup-id xss-lock -n /path/to/dim-screen.sh -- /path/to/lock.sh -i
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/weirane/dotfiles/blob/master/dotconfig/i3/scripts/dim-screen.sh&quot;&gt;dim-screen.sh&lt;/a&gt; 修改自 xss-lock 的仓库，&lt;a href=&quot;https://github.com/weirane/dotfiles/blob/master/dotconfig/i3/scripts/lock.sh&quot;&gt;lock.sh&lt;/a&gt; 如链接。&lt;/p&gt;
+
+&lt;h3 id=&quot;音量亮度调节键&quot;&gt;音量/亮度调节键&lt;/h3&gt;
+&lt;p&gt;参考 StackOverflow 上的一个 &lt;a href=&quot;https://unix.stackexchange.com/a/439487&quot;&gt;答案&lt;/a&gt;，安装 &lt;code&gt;xorg-xbacklight&lt;/code&gt; 并将以下五行加入 &lt;code&gt;~/.config/i3/config&lt;/code&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;bindsym XF86AudioMute exec &quot;amixer sset 'Master' toggle&quot;
+bindsym XF86AudioLowerVolume exec &quot;amixer sset 'Master' 5%-&quot;
+bindsym XF86AudioRaiseVolume exec &quot;amixer sset 'Master' 5%+&quot;
+bindsym XF86MonBrightnessUp exec &quot;xbacklight -inc 5&quot;
+bindsym XF86MonBrightnessDown exec &quot;xbacklight -dec 5&quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;hr /&gt;
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;这个 bug report 的最后一个 comment：&lt;a href=&quot;https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/287215&quot;&gt;https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/287215&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:2&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://bugs.freedesktop.org/show_bug.cgi?id=25262#c3&quot;&gt;https://bugs.freedesktop.org/show_bug.cgi?id=25262#c3&lt;/a&gt; &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;</content><author><name>weirane</name></author><category term="Tweaks" /><category term="i3" /><category term="terminal" /><category term="dotfiles" /><summary type="html">本文记录一下在我的 Manjaro 上从 GNOME 迁移到 i3-gaps 的经历，也可以为在其它 Arch 系发行版上安装 i3-gaps 提供一些参考。i3 是一种平铺窗口管理器（tiling window manager）。我在本机安装 i3 之前先在虚拟机上尝试了一下 Manjaro 的 i3 edition 以熟悉一下 i3 的 key bindings，以下在配置时有所参考它的默认配置。</summary></entry><entry><title type="html">Rust + WebAssembly: 最近点对问题</title><link href="https://blog.ruo-chen.wang/2019/11/rust-wasm-closest-pair.html" rel="alternate" type="text/html" title="Rust + WebAssembly: 最近点对问题" /><published>2019-11-25T00:00:00+08:00</published><updated>2021-07-08T11:33:01+08:00</updated><id>https://blog.ruo-chen.wang/2019/11/rust-wasm-closest-pair</id><content type="html" xml:base="https://blog.ruo-chen.wang/2019/11/rust-wasm-closest-pair.html">&lt;p&gt;先放 &lt;a href=&quot;https://weirane.github.io/closest-pair-wasm/&quot;&gt;链接&lt;/a&gt;。这个项目一开始是算法课的一个上机作业，&lt;a href=&quot;https://en.wikipedia.org/wiki/Closest_pair_of_points_problem&quot;&gt;平面上的最近点对问题&lt;/a&gt;。这是一个使用分治法的计算几何学问题，具体的算法就不在这里解释了，这篇博客主要讲讲 Rust 和 WebAssembly。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;2020-02-08 更新：增加了 &lt;a href=&quot;#更好的解决方案&quot;&gt;更好的解决方案&lt;/a&gt; 一节。&lt;/p&gt;
+
+&lt;h2 id=&quot;rust&quot;&gt;Rust&lt;/h2&gt;
+&lt;p&gt;先说说在这个项目中我学到的关于 Rust 的东西吧。&lt;/p&gt;
+
+&lt;h3 id=&quot;遇到的问题&quot;&gt;遇到的问题&lt;/h3&gt;
+&lt;p&gt;在命令行中输入数据的时候需要将输入的每一行转化为一个 &lt;code&gt;Point&lt;/code&gt;，并将这些 &lt;code&gt;Point&lt;/code&gt; 存入一个 &lt;code&gt;Vec&lt;/code&gt; 中。由于 &lt;a href=&quot;https://doc.rust-lang.org/std/io/struct.StdinLock.html&quot;&gt;&lt;code&gt;io::StdinLock&lt;/code&gt;&lt;/a&gt; 实现了 &lt;a href=&quot;https://doc.rust-lang.org/std/io/trait.BufRead.html&quot;&gt;&lt;code&gt;BufRead&lt;/code&gt;&lt;/a&gt; 这个 trait，所以可以方便地用 &lt;code&gt;io::stdin().lock().lines()&lt;/code&gt; 获得一个输入行的迭代器。我的 &lt;code&gt;Point&lt;/code&gt; 结构体已经实现了 &lt;a href=&quot;https://doc.rust-lang.org/std/str/trait.FromStr.html&quot;&gt;&lt;code&gt;FromStr&lt;/code&gt;&lt;/a&gt; trait，现在应该如何将每一行 &lt;code&gt;map&lt;/code&gt; 成 &lt;code&gt;Point&lt;/code&gt; 并收集到 &lt;code&gt;Vec&lt;/code&gt; 中？由于 &lt;code&gt;Point::from_str&lt;/code&gt; 返回的是一个 &lt;code&gt;Result&lt;/code&gt; 但我又不想直接 &lt;code&gt;unwrap&lt;/code&gt; 掉而是想用 &lt;code&gt;?&lt;/code&gt; 把错误给 propagate 上去，所以事情并没有那么简单。我的第一感觉是&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-rust&quot;&gt;let points: Vec&amp;lt;_&amp;gt; = io::stdin()
+    .lock()
+    .lines()
+    .map(|line| line.unwrap())
+    .take_while(|line| !line.is_empty())
+    .map(|line| Point::from_str(&amp;amp;line)?)  // Notice this line
+    .collect();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;但这显然是不对的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;error[E0277]: the `?` operator can only be used in a closure that returns `Result` or `Option` (or another type that implements `std::ops::Try`)
+  --&amp;gt; examples/input.rs:14:21
+   |
+14 |         .map(|line| Point::from_str(&amp;amp;line)?)
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^ cannot use the `?` operator in a closure that returns `closest_pair::point::Point`
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;由于 &lt;code&gt;map&lt;/code&gt; 接受的参数是一个闭包，所以这里的 &lt;code&gt;?&lt;/code&gt; 只能将 &lt;code&gt;from_str&lt;/code&gt; 的错误返回给闭包。如果想用 error propagation 的话就要使得 &lt;code&gt;map&lt;/code&gt; 接受的闭包返回值为一个 &lt;code&gt;Result&amp;lt;Point, _&amp;gt;&lt;/code&gt;，但是要 &lt;code&gt;collect&lt;/code&gt; 的是 &lt;code&gt;Point&lt;/code&gt; 啊！&lt;/p&gt;
+
+&lt;h3 id=&quot;真巧&quot;&gt;真巧&lt;/h3&gt;
+&lt;p&gt;写的时候正好看到了 reddit 上一个关于 Rust 的一些不那么为人所知的特性的 &lt;a href=&quot;https://www.reddit.com/r/rust/comments/do186h/can_you_share_some_lesser_known_rust_features/&quot;&gt;thread&lt;/a&gt;。里面正好有人提到可以将一个 &lt;code&gt;Result&amp;lt;T, E&amp;gt;&lt;/code&gt; 的迭代器 &lt;code&gt;collect&lt;/code&gt; 成 &lt;code&gt;Result&amp;lt;Collection&amp;lt;T&amp;gt;, E&amp;gt;&lt;/code&gt;。（惊讶.jpg）&lt;/p&gt;
+
+&lt;p&gt;所以最终的结果为&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-rust&quot;&gt;let points: Vec&amp;lt;_&amp;gt; = io::stdin()
+    .lock()
+    .lines()
+    .map(|line| line.unwrap())
+    .take_while(|line| !line.is_empty())
+    .map(|line| Ok(Point::from_str(&amp;amp;line)?))
+    .collect::&amp;lt;Result&amp;lt;_, ParsePointError&amp;gt;&amp;gt;()?;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Rust 的这种可以用一句话完成较为复杂的工作而且将错误处理做好的能力还是非常不错的。&lt;/p&gt;
+
+&lt;p&gt;另外我还是想吹一下 Rust 的文档，因为在这个项目中用了一些以前没用过的方法，比如 &lt;a href=&quot;https://doc.rust-lang.org/std/primitive.slice.html#method.windows&quot;&gt;&lt;code&gt;windows&lt;/code&gt;&lt;/a&gt;（&lt;del&gt;虽然到最后还是删掉了&lt;/del&gt;）、&lt;a href=&quot;https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.take&quot;&gt;&lt;code&gt;take&lt;/code&gt;&lt;/a&gt; 等等。Rust 的文档看起来非常舒服，并且很多函数都有使用示例。不像某 cppreference 字号小的不行然后排版奇奇怪怪的（&lt;/p&gt;
+
+&lt;h2 id=&quot;webassembly&quot;&gt;WebAssembly&lt;/h2&gt;
+&lt;p&gt;官网中对 WebAssembly 的介绍：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;WebAssembly (abbreviated &lt;em&gt;Wasm&lt;/em&gt;) is a binary instruction format for a stack-based virtual machine. Wasm is designed as a portable target for compilation of high-level languages like C/C++/Rust, enabling deployment on the web for client and server applications.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;WebAssembly 应该说是一个比较新的技术了，但是使用 Rust 开发 WebAssembly 已经有了一些很好用的工具，比如 &lt;a href=&quot;https://rustwasm.github.io/wasm-pack/&quot;&gt;wasm-pack&lt;/a&gt; 等，Rust 官方有一个 &lt;a href=&quot;https://rustwasm.github.io/docs/book/&quot;&gt;tutorial&lt;/a&gt; 很清晰地展示了如何使用 Rust 来写 WebAssembly。&lt;/p&gt;
+
+&lt;h3 id=&quot;如何传数据&quot;&gt;如何传数据&lt;/h3&gt;
+&lt;p&gt;在这个项目中一大问题是 Rust 和 JavaScript 应该如何相互传数据。原来我打算的是只在 Rust 中定义一个函数接收一个 point 的数组然后返回结果。但是目前 WebAssembly 并不支持我想用的参数和返回值类型：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;一个点由两个坐标构成，但是与 JavaScript 交互的函数参数类型不能是 &lt;code&gt;Vec&amp;lt;(f64, f64)&amp;gt;&lt;/code&gt;；&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;我的结果是五个浮点数（距离和两个点的坐标），而 WebAssembly 目前还不能返回一个 tuple：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; the trait `wasm_bindgen::convert::traits::IntoWasmAbi` is not implemented for `(f64, f64, f64, f64, f64)`
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;解决办法之一是调用函数时传两个数组，分别为横坐标和纵坐标，然后定义一个 &lt;code&gt;struct&lt;/code&gt; 来放五个返回值：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-rust&quot;&gt;#[wasm_bindgen]
+pub struct ReturnType {
+     pub dist: f64,
+     pub p0_x: f64,
+     pub p0_y: f64,
+     pub p1_x: f64,
+     pub p1_y: f64,
+}
+
+#[wasm_bindgen]
+pub fn calculate(xs: &amp;amp;[f64], ys: &amp;amp;[f64]) -&amp;gt; ReturnType { ... }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这种设计的交互的方式就是在 JavaScript 里维护横纵坐标的数组，要计算的时候将这两个数组传给 Rust，Rust 经过计算将一个 &lt;code&gt;ReturnType&lt;/code&gt; 返回给 JavaScript。但是感觉这样的交互模式很奇怪，要把点的两个坐标分开。&lt;/p&gt;
+
+&lt;h3 id=&quot;解决方案&quot;&gt;解决方案&lt;/h3&gt;
+&lt;p&gt;直接使用一个 struct &lt;code&gt;WasmApp&lt;/code&gt; 来存储点的数组和计算的返回值，然后把添加点和计算等操作都做成 &lt;code&gt;WasmApp&lt;/code&gt; 的方法：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-rust&quot;&gt;#[wasm_bindgen]
+#[derive(Debug, Default)]
+pub struct WasmApp {
+    points: Vec&amp;lt;Point&amp;gt;,
+    pub dist: f64,
+    pub p0_x: f64,
+    pub p0_y: f64,
+    pub p1_x: f64,
+    pub p1_y: f64,
+}
+
+#[wasm_bindgen]
+impl WasmApp {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -&amp;gt; Self { ... }
+    #[wasm_bindgen(js_name = addPoint)]
+    pub fn add_point(&amp;amp;mut self, x: f64, y: f64) { ... }
+    pub fn calculate(&amp;amp;mut self) -&amp;gt; Result&amp;lt;(), JsValue&amp;gt; { ... }
+    pub fn clear(&amp;amp;mut self) { ... }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;其中的 &lt;code&gt;js_name&lt;/code&gt; 的作用为指定 JavaScript 调用时函数的名字。由于 Rust 和 JavaScript 对函数的 naming convensions 不一样，这个选项可以让代码在 Rust 和 JavaScript 两边都遵守主流的命名模式。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;Result&amp;lt;(), JsValue&amp;gt;&lt;/code&gt; 是一个合法的返回值，参见 &lt;a href=&quot;https://rustwasm.github.io/docs/wasm-bindgen/reference/types/result.html&quot;&gt;wasm-bindgen guide&lt;/a&gt; 中的说明。当 &lt;code&gt;Result&lt;/code&gt; 的值为 &lt;code&gt;Ok(_)&lt;/code&gt; 的时候正常返回，若为 &lt;code&gt;Err(_)&lt;/code&gt;，则此函数在 JavaScript 中抛出一个异常，可以使用 &lt;code&gt;try&lt;/code&gt;-&lt;code&gt;catch&lt;/code&gt; 来处理。&lt;/p&gt;
+
+&lt;p&gt;这样在 JavaScript 中只需调用 &lt;code&gt;WasmApp&lt;/code&gt; 的方法，不再需要分开存储点的坐标了。不过因为目前无法返回一个 tuple，所以返回值还是只能通过 &lt;code&gt;WasmApp&lt;/code&gt; 的属性获得。&lt;/p&gt;
+
+&lt;h3 id=&quot;更好的解决方案&quot;&gt;更好的解决方案&lt;/h3&gt;
+&lt;p&gt;在 WebAssembly 中不止可以调用全局的 JavaScript 函数，还可以调用自己写的函数。所以可将唯一需要计算结果的地方，即将结果画在 canvas 上的这个过程封装成一个 JavaScript 函数，导入 Rust 并在计算完毕后调用这个函数，这样就不需要将计算的结果传回 JavaScript 了。&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-rust&quot;&gt;#[wasm_bindgen(module = &quot;/www/present.js&quot;)]
+extern &quot;C&quot; {
+    #[wasm_bindgen(js_name = presentResult)]
+    fn present_result(dist: f64, p0_x: f64, p0_y: f64, p1_x: f64, p1_y: f64);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;module&lt;/code&gt; 路径写法的详细解释见 &lt;a href=&quot;https://rustwasm.github.io/docs/wasm-bindgen/reference/js-snippets.html&quot;&gt;文档&lt;/a&gt;，这里开头的 &lt;code&gt;/&lt;/code&gt; 相对于项目的根目录。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;www/present.js&lt;/code&gt; 要写成一个 ES module, 即&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-javascript&quot;&gt;export function presentResult(dist, p0_x, p0_y, p1_x, p1_y) {
+    // ...
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;这样在 Rust 中使用 &lt;code&gt;present_result(...)&lt;/code&gt; 即可达到在 JavaScript 中调用 &lt;code&gt;presentResult&lt;/code&gt; 的效果。&lt;code&gt;WasmApp&lt;/code&gt; 中除了 &lt;code&gt;points&lt;/code&gt; 之外的域都可以删除了。&lt;/p&gt;
+
+&lt;h2 id=&quot;部署&quot;&gt;部署&lt;/h2&gt;
+&lt;p&gt;这个项目使用 &lt;a href=&quot;https://webpack.js.org/&quot;&gt;webpack&lt;/a&gt; 部署 WebAssembly 应用，webpack 也是官网的 &lt;a href=&quot;https://rustwasm.github.io/docs/book/&quot;&gt;tutorial&lt;/a&gt; 使用的工具。用命令 &lt;code&gt;npm build&lt;/code&gt; 即可得到 &lt;code&gt;dist&lt;/code&gt; 目录，将其复制到目标服务器上即可。还要注意的是目标服务器需要将 &lt;code&gt;*.wasm&lt;/code&gt; 的 MIME 类型设置为 &lt;code&gt;application/wasm&lt;/code&gt;。我使用了一个与此博客类似的 Travis CI 配置来自动地在我向此项目的 &lt;a href=&quot;https://github.com/weirane/closest-pair-wasm&quot;&gt;仓库&lt;/a&gt; push 的时候编译并部署到 &lt;a href=&quot;https://weirane.github.io/closest-pair-wasm/&quot;&gt;GitHub Pages&lt;/a&gt; 上。&lt;/p&gt;
+
+&lt;p&gt;最终结果：🎉&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2-rust-wasm-cp/demo.png&quot; alt=&quot;demo&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;之后我还打算给这个 canvas 加一个 grid 让距离值看起来更直观，目前就这样吧。&lt;/p&gt;</content><author><name>weirane</name></author><category term="Programming" /><category term="rust" /><category term="wasm" /><summary type="html">先放 链接。这个项目一开始是算法课的一个上机作业，平面上的最近点对问题。这是一个使用分治法的计算几何学问题，具体的算法就不在这里解释了，这篇博客主要讲讲 Rust 和 WebAssembly。</summary></entry></feed>

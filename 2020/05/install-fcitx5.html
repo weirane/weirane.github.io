@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="zh" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Fcitx5 安装记 | weirane’s blog</title>
+<meta name="description" content="Installing fcitx5">
+
+
+  <meta name="author" content="weirane">
+  
+  <meta property="article:author" content="weirane">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="weirane's blog">
+<meta property="og:title" content="Fcitx5 安装记">
+<meta property="og:url" content="https://blog.ruo-chen.wang/2020/05/install-fcitx5.html">
+
+
+  <meta property="og:description" content="Installing fcitx5">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2020-05-03T00:00:00+08:00">
+
+
+
+  <meta property="article:modified_time" content="2024-09-11T11:08:25+08:00">
+
+
+
+
+<link rel="canonical" href="https://blog.ruo-chen.wang/2020/05/install-fcitx5.html">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ruochen Wang",
+      "url": "https://blog.ruo-chen.wang/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="weirane's blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/styles/gruvbox-light.css">
+<script src="/static/highlight.pack.js"></script>
+<script>
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          weirane's blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/">Home</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/tags/">Tags</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/images/avatar.png" alt="weirane" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">weirane</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Fairfax, VA</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+            <li><a href="https://github.com/weirane" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox">
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Pages</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+          
+            <li><a href="/about/"><i class="fas fa-fw fa-user-circle"></i> About</a></li>
+          
+            <li><a href="/reflinks/"><i class="fas fa-fw fa-link"></i> Referal links</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Fcitx5 安装记">
+    <meta itemprop="description" content="在 #archlinux-cn 上 fcitx 是个经常被讨论的话题，每次都有人推荐 fcitx5。但是因为只有在 KDE 中有图形化的配置工具就一直没有尝试。今天有人说配置工具 kcm-fcitx5在非 KDE 中也可以安装了，所以来试试。">
+    <meta itemprop="datePublished" content="2020-05-03T00:00:00+08:00">
+    <meta itemprop="dateModified" content="2024-09-11T11:08:25+08:00">
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Fcitx5 安装记
+</h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2020-05-03T00:00:00+08:00">May 3, 2020</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          3 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right sticky">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#%E5%AE%89%E8%A3%85">安装</a></li>
+<li>
+<a href="#%E9%85%8D%E7%BD%AE">配置</a><ul>
+<li><a href="#%E8%BE%93%E5%85%A5%E6%B3%95">输入法</a></li>
+<li><a href="#%E8%87%AA%E5%8A%A8%E5%90%AF%E5%8A%A8%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F">自动启动与环境变量</a></li>
+</ul>
+</li>
+<li>
+<a href="#%E4%BD%93%E9%AA%8C">体验</a><ul>
+<li><a href="#%E5%BF%AB%E6%8D%B7%E8%BE%93%E5%85%A5">快捷输入</a></li>
+<li><a href="#%E5%8D%95%E8%A1%8C%E6%A8%A1%E5%BC%8F">单行模式</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>在 #archlinux-cn 上 fcitx 是个经常被讨论的话题，每次都有人推荐 fcitx5。但是因为只有在 KDE 中有图形化的配置工具就一直没有尝试。今天有人说配置工具 <code>kcm-fcitx5</code>
+在非 KDE 中也可以安装了，所以来试试。</p>
+
+<ul>
+  <li>2021-01-29 更新：<code>kcm-fcitx5</code> 改名为 <code>fcitx5-configtool</code>（其实早就改了，只是博
+  客里没更新）</li>
+</ul>
+
+<h2 id="安装">安装</h2>
+
+<p>先卸载 fcitx4：</p>
+
+<pre><code>pacman -Qsq fcitx | sudo pacman -Rsn -
+</code></pre>
+
+<p>安装 fcitx5：</p>
+
+<pre><code>sudo pacman -S fcitx5 fcitx5-chinese-addons fcitx5-configtool fcitx5-qt fcitx5-gtk
+</code></pre>
+
+<p>Fcitx5 自带的皮肤不是很好看，我还安装了 <a href="https://github.com/hosxy/Fcitx5-Material-Color">material-color 皮肤</a>：</p>
+
+<pre><code>sudo pacman -S fcitx5-material-color
+</code></pre>
+
+<h2 id="配置">配置</h2>
+
+<h3 id="输入法">输入法</h3>
+
+<p>有了图形化的配置工具，配置会轻松很多。首先在「输入法」一栏中添加需要的输入法，我使用的是双拼，然后在「附加组件」→「拼音」里面修改双拼方案为小鹤双拼。</p>
+
+<h3 id="自动启动与环境变量">自动启动与环境变量</h3>
+
+<p>把自动启动 fcitx 的命令改成 <code>fcitx5</code>。</p>
+
+<p>我使用的图形管理是 X11。使用 fcitx4 的时候在 <code>~/.xprofile</code> 或者 <code>~/.xinitrc</code> 中设置的环境变量似乎不需要改成 fcitx5，之前 fcitx 使用的配置可以直接使用。</p>
+
+<pre><code class="language-sh">export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS="@im=fcitx"
+</code></pre>
+
+<h2 id="体验">体验</h2>
+
+<h3 id="快捷输入">快捷输入</h3>
+
+<p>在输入法激活时使用分号键触发快捷输入。在 <code>/usr/share/fcitx5/data/quickphrase.d</code>
+中有一些自带的快捷输入，包括 emoji 和一些 LaTeX 命令，可以转换部分 LaTeX 命令到对应的 unicode 字符，这个功能非常实用，可以让 LaTeX 文档更直观。当然也可以在配置工具中自定义快捷输入。</p>
+
+<p><img src="/images/6-install-fcitx5/emoji.png" alt="emoji quick phrase"></p>
+
+<p><img src="/images/6-install-fcitx5/quickphrase.png" alt="LaTeX quick phrase"></p>
+
+<h3 id="单行模式">单行模式</h3>
+
+<p>Fcitx5 自带的拼音可以使用单行模式，配合 material color 主题体验很好，有点
+Windows 10 自带输入法的感觉。</p>
+
+<p><img src="/images/6-install-fcitx5/blue.png" alt="material color blue"><sup id="fnref:mc-fig"><a href="#fn:mc-fig" class="footnote" rel="footnote" role="doc-noteref">1</a></sup></p>
+
+<p>对于自带的拼音，在配置工具的「附加组件」→「拼音」中打开「可用时在应用程序中显示预编辑文本」，或者直接修改 <code>~/.config/fcitx5/conf/pinyin.conf</code>：</p>
+
+<pre><code># 可用时在应用程序中显示预编辑文本
+PreeditInApplicaation=True
+</code></pre>
+
+<p>可惜单行模式对使用 XIM 的程序不能使用 <sup id="fnref:no-xim"><a href="#fn:no-xim" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，而我用的终端模拟器 alacritty 正好是使用的 XIM 😥<sup id="fnref:alacritty-xim"><a href="#fn:alacritty-xim" class="footnote" rel="footnote" role="doc-noteref">3</a></sup>。不过单行模式算不上是刚需，也就无所谓了。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>总的来说，fcitx5 的体验比 4 要好一些。配置选项简洁，配合 material color 皮肤界面也比较好看。<del>也可能只是我没有仔细研究 fcitx4 的配置</del></p>
+
+<hr>
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:mc-fig">
+      <p>图片来自 material color 的 <a href="https://github.com/hosxy/Fcitx5-Material-Color">GitHub 仓库</a>，使用 imagemagick
+加了透明（<a href="https://stackoverflow.com/a/33541007/10974106">https://stackoverflow.com/a/33541007/10974106</a>）</p>
+      <pre><code class="language-sh">convert blue.png -fuzz 20% -fill none -draw "color 1,1 floodfill" result.png
+</code></pre>
+      <p><a href="#fnref:mc-fig" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+    <li id="fn:no-xim">
+      <p><a href="https://github.com/fcitx/fcitx5-chinese-addons/issues/3">https://github.com/fcitx/fcitx5-chinese-addons/issues/3</a> <a href="#fnref:no-xim" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+    <li id="fn:alacritty-xim">
+      <p><a href="https://github.com/alacritty/alacritty/issues/44">https://github.com/alacritty/alacritty/issues/44</a> <a href="#fnref:alacritty-xim" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+  </ol>
+</div>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/fcitx" class="page__taxonomy-item" rel="tag">fcitx</a><span class="sep">, </span>
+    
+      <a href="/tags/imagemagick" class="page__taxonomy-item" rel="tag">imagemagick</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/categories/tools" class="page__taxonomy-item" rel="tag">Tools</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-09-11">September 11, 2024</time></p>
+
+
+      </footer>
+
+      
+
+      
+  
+    <nav class="pagination">
+      
+        <a href="/2020/04/map-capslock-to-esc-and-ctrl.html" class="pagination--pager" title="将 Caps Lock 映射为 Escape 和 Ctrl
+">Previous</a>
+      
+      
+        <a href="/2020/08/git-server.html" class="pagination--pager" title="搭建一个 Git 服务器
+">Next</a>
+      
+    </nav>
+  
+
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <section id="isso-thread"></section>
+
+  
+</div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/09/starting-notorious-rbg.html" rel="permalink">开始读《异见时刻》
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-09-08T00:00:00+08:00">September 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">打算开始读《异见时刻：“声名狼藉” 的金斯伯格大法官》。这是一本前美国最高法院大法官 Ruth Bader Ginsburg (RBG) 的传记。RBG 是美国最高法院第二位女性大法官。最开始听说 RBG 是在詹青云做客鲁豫的一集播客中（岩中花述 S5E1，03/12/2024）。当时好像正好是在 DC 市里面逛...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/08/cultural-differences.html" rel="permalink">中美文化差异
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-08-08T00:00:00+08:00">August 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          12 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近看了不少中国哲学的书和视频，想来结合我的经历说一下我浅薄的理解。我主要看的是复旦的王德峰老师的视频。最开始看王德峰老师是从他的 “中西方文化差异的渊源” 入坑的，然后又陆续看了马克思哲学、阳明心学、艺术哲学等等课程，感觉非常长脑子。他有很多片段在 B 站上都很火，特别是讲金刚经三句义的那一段。有兴趣的可以去搜...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/12/functional.html" rel="permalink">关于基于表达式的编程语言的一些思考
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-12-25T00:00:00+08:00">December 25, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近学 Go 语言又想起之前看过的一个 talk，presenter 说他几乎不用 else 关键字。因为一般情况下，if 语句的其中一个 branch 会比较短（比如处理特殊情况），这样可以在这个 branch 结束后直接从函数返回，后续的代码就不需要进行缩进了，如
+func fact(n int) int {...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/08/bwrap-wps.html" rel="permalink">使用 bwrap 隔离 WPS Office
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-08-20T00:00:00+08:00">August 20, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">看到依云在 博客 中提到了非特权沙盒工具 bwrap。博客的结尾提到可以用它来跑一些不太干净的软件，便来配置一下 WPS Office。
+
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li>
+            <a href="https://t.me/wrc_notebook" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-telegram" aria-hidden="true"></i>Telegram Channel
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://m.cmx.im/@weirane" target="_blank" rel="me nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-mastodon" aria-hidden="true"></i>Mastodon
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://github.com/weirane" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github" aria-hidden="true"></i>GitHub
+            </a>
+          </li>
+        
+      
+        
+      
+    
+
+    <li>
+      <a href="/feed.xml">
+        <i class="fas fa-fw fa-rss-square" aria-hidden="true"></i>Feed
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">
+  Copyright © 2025 Ruochen Wang <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  <br>
+  Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+  <br>
+  <a href="/status/">Site version 04398ad</a>
+  <br>
+  <a href="/sitemap.xml">Sitemap (XML)</a>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <script data-goatcounter="https://stats.ruo-chen.wang/count" async src="//stats.ruo-chen.wang/count.js"></script>
+
+
+
+
+
+
+    <script data-isso="https://isso.ruo-chen.wang" src="https://isso.ruo-chen.wang/js/embed.min.js" async></script>
+
+
+
+
+
+
+
+  </body>
+</html>

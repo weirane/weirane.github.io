@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="zh" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Rust + WebAssembly: 最近点对问题 | weirane’s blog</title>
+<meta name="description" content="A Rust + WebAssembly demo of the closest point problem">
+
+
+  <meta name="author" content="weirane">
+  
+  <meta property="article:author" content="weirane">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="weirane's blog">
+<meta property="og:title" content="Rust + WebAssembly: 最近点对问题">
+<meta property="og:url" content="https://blog.ruo-chen.wang/2019/11/rust-wasm-closest-pair.html">
+
+
+  <meta property="og:description" content="A Rust + WebAssembly demo of the closest point problem">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2019-11-25T00:00:00+08:00">
+
+
+
+  <meta property="article:modified_time" content="2024-09-11T11:08:25+08:00">
+
+
+
+
+<link rel="canonical" href="https://blog.ruo-chen.wang/2019/11/rust-wasm-closest-pair.html">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ruochen Wang",
+      "url": "https://blog.ruo-chen.wang/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="weirane's blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/styles/gruvbox-light.css">
+<script src="/static/highlight.pack.js"></script>
+<script>
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          weirane's blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/">Home</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/tags/">Tags</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/images/avatar.png" alt="weirane" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">weirane</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Fairfax, VA</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+            <li><a href="https://github.com/weirane" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox">
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Pages</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+          
+            <li><a href="/about/"><i class="fas fa-fw fa-user-circle"></i> About</a></li>
+          
+            <li><a href="/reflinks/"><i class="fas fa-fw fa-link"></i> Referal links</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Rust + WebAssembly: 最近点对问题">
+    <meta itemprop="description" content="先放 链接。这个项目一开始是算法课的一个上机作业，平面上的最近点对问题。这是一个使用分治法的计算几何学问题，具体的算法就不在这里解释了，这篇博客主要讲讲 Rust 和 WebAssembly。">
+    <meta itemprop="datePublished" content="2019-11-25T00:00:00+08:00">
+    <meta itemprop="dateModified" content="2024-09-11T11:08:25+08:00">
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Rust + WebAssembly: 最近点对问题
+</h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2019-11-25T00:00:00+08:00">November 25, 2019</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          8 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right sticky">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li>
+<a href="#rust">Rust</a><ul>
+<li><a href="#%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98">遇到的问题</a></li>
+<li><a href="#%E7%9C%9F%E5%B7%A7">真巧</a></li>
+</ul>
+</li>
+<li>
+<a href="#webassembly">WebAssembly</a><ul>
+<li><a href="#%E5%A6%82%E4%BD%95%E4%BC%A0%E6%95%B0%E6%8D%AE">如何传数据</a></li>
+<li><a href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">解决方案</a></li>
+<li><a href="#%E6%9B%B4%E5%A5%BD%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">更好的解决方案</a></li>
+</ul>
+</li>
+<li><a href="#%E9%83%A8%E7%BD%B2">部署</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>先放 <a href="https://weirane.github.io/closest-pair-wasm/">链接</a>。这个项目一开始是算法课的一个上机作业，<a href="https://en.wikipedia.org/wiki/Closest_pair_of_points_problem">平面上的最近点对问题</a>。这是一个使用分治法的计算几何学问题，具体的算法就不在这里解释了，这篇博客主要讲讲 Rust 和 WebAssembly。</p>
+
+<hr>
+
+<p>2020-02-08 更新：增加了 <a href="#%E6%9B%B4%E5%A5%BD%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88">更好的解决方案</a> 一节。</p>
+
+<h2 id="rust">Rust</h2>
+<p>先说说在这个项目中我学到的关于 Rust 的东西吧。</p>
+
+<h3 id="遇到的问题">遇到的问题</h3>
+<p>在命令行中输入数据的时候需要将输入的每一行转化为一个 <code>Point</code>，并将这些 <code>Point</code> 存入一个 <code>Vec</code> 中。由于 <a href="https://doc.rust-lang.org/std/io/struct.StdinLock.html"><code>io::StdinLock</code></a> 实现了 <a href="https://doc.rust-lang.org/std/io/trait.BufRead.html"><code>BufRead</code></a> 这个 trait，所以可以方便地用 <code>io::stdin().lock().lines()</code> 获得一个输入行的迭代器。我的 <code>Point</code> 结构体已经实现了 <a href="https://doc.rust-lang.org/std/str/trait.FromStr.html"><code>FromStr</code></a> trait，现在应该如何将每一行 <code>map</code> 成 <code>Point</code> 并收集到 <code>Vec</code> 中？由于 <code>Point::from_str</code> 返回的是一个 <code>Result</code> 但我又不想直接 <code>unwrap</code> 掉而是想用 <code>?</code> 把错误给 propagate 上去，所以事情并没有那么简单。我的第一感觉是</p>
+<pre><code class="language-rust">let points: Vec&lt;_&gt; = io::stdin()
+    .lock()
+    .lines()
+    .map(|line| line.unwrap())
+    .take_while(|line| !line.is_empty())
+    .map(|line| Point::from_str(&amp;line)?)  // Notice this line
+    .collect();
+</code></pre>
+
+<p>但这显然是不对的：</p>
+
+<pre><code>error[E0277]: the `?` operator can only be used in a closure that returns `Result` or `Option` (or another type that implements `std::ops::Try`)
+  --&gt; examples/input.rs:14:21
+   |
+14 |         .map(|line| Point::from_str(&amp;line)?)
+   |                     ^^^^^^^^^^^^^^^^^^^^^^^ cannot use the `?` operator in a closure that returns `closest_pair::point::Point`
+</code></pre>
+
+<p>由于 <code>map</code> 接受的参数是一个闭包，所以这里的 <code>?</code> 只能将 <code>from_str</code> 的错误返回给闭包。如果想用 error propagation 的话就要使得 <code>map</code> 接受的闭包返回值为一个 <code>Result&lt;Point, _&gt;</code>，但是要 <code>collect</code> 的是 <code>Point</code> 啊！</p>
+
+<h3 id="真巧">真巧</h3>
+<p>写的时候正好看到了 reddit 上一个关于 Rust 的一些不那么为人所知的特性的 <a href="https://www.reddit.com/r/rust/comments/do186h/can_you_share_some_lesser_known_rust_features/">thread</a>。里面正好有人提到可以将一个 <code>Result&lt;T, E&gt;</code> 的迭代器 <code>collect</code> 成 <code>Result&lt;Collection&lt;T&gt;, E&gt;</code>。（惊讶.jpg）</p>
+
+<p>所以最终的结果为</p>
+<pre><code class="language-rust">let points: Vec&lt;_&gt; = io::stdin()
+    .lock()
+    .lines()
+    .map(|line| line.unwrap())
+    .take_while(|line| !line.is_empty())
+    .map(|line| Ok(Point::from_str(&amp;line)?))
+    .collect::&lt;Result&lt;_, ParsePointError&gt;&gt;()?;
+</code></pre>
+
+<p>Rust 的这种可以用一句话完成较为复杂的工作而且将错误处理做好的能力还是非常不错的。</p>
+
+<p>另外我还是想吹一下 Rust 的文档，因为在这个项目中用了一些以前没用过的方法，比如 <a href="https://doc.rust-lang.org/std/primitive.slice.html#method.windows"><code>windows</code></a>（<del>虽然到最后还是删掉了</del>）、<a href="https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.take"><code>take</code></a> 等等。Rust 的文档看起来非常舒服，并且很多函数都有使用示例。不像某 cppreference 字号小的不行然后排版奇奇怪怪的（</p>
+
+<h2 id="webassembly">WebAssembly</h2>
+<p>官网中对 WebAssembly 的介绍：</p>
+
+<blockquote>
+  <p>WebAssembly (abbreviated <em>Wasm</em>) is a binary instruction format for a stack-based virtual machine. Wasm is designed as a portable target for compilation of high-level languages like C/C++/Rust, enabling deployment on the web for client and server applications.</p>
+</blockquote>
+
+<p>WebAssembly 应该说是一个比较新的技术了，但是使用 Rust 开发 WebAssembly 已经有了一些很好用的工具，比如 <a href="https://rustwasm.github.io/wasm-pack/">wasm-pack</a> 等，Rust 官方有一个 <a href="https://rustwasm.github.io/docs/book/">tutorial</a> 很清晰地展示了如何使用 Rust 来写 WebAssembly。</p>
+
+<h3 id="如何传数据">如何传数据</h3>
+<p>在这个项目中一大问题是 Rust 和 JavaScript 应该如何相互传数据。原来我打算的是只在 Rust 中定义一个函数接收一个 point 的数组然后返回结果。但是目前 WebAssembly 并不支持我想用的参数和返回值类型：</p>
+
+<ol>
+  <li>一个点由两个坐标构成，但是与 JavaScript 交互的函数参数类型不能是 <code>Vec&lt;(f64, f64)&gt;</code>；</li>
+  <li>
+    <p>我的结果是五个浮点数（距离和两个点的坐标），而 WebAssembly 目前还不能返回一个 tuple：</p>
+
+    <pre><code> the trait `wasm_bindgen::convert::traits::IntoWasmAbi` is not implemented for `(f64, f64, f64, f64, f64)`
+</code></pre>
+  </li>
+</ol>
+
+<p>解决办法之一是调用函数时传两个数组，分别为横坐标和纵坐标，然后定义一个 <code>struct</code> 来放五个返回值：</p>
+<pre><code class="language-rust">#[wasm_bindgen]
+pub struct ReturnType {
+     pub dist: f64,
+     pub p0_x: f64,
+     pub p0_y: f64,
+     pub p1_x: f64,
+     pub p1_y: f64,
+}
+
+#[wasm_bindgen]
+pub fn calculate(xs: &amp;[f64], ys: &amp;[f64]) -&gt; ReturnType { ... }
+</code></pre>
+<p>这种设计的交互的方式就是在 JavaScript 里维护横纵坐标的数组，要计算的时候将这两个数组传给 Rust，Rust 经过计算将一个 <code>ReturnType</code> 返回给 JavaScript。但是感觉这样的交互模式很奇怪，要把点的两个坐标分开。</p>
+
+<h3 id="解决方案">解决方案</h3>
+<p>直接使用一个 struct <code>WasmApp</code> 来存储点的数组和计算的返回值，然后把添加点和计算等操作都做成 <code>WasmApp</code> 的方法：</p>
+<pre><code class="language-rust">#[wasm_bindgen]
+#[derive(Debug, Default)]
+pub struct WasmApp {
+    points: Vec&lt;Point&gt;,
+    pub dist: f64,
+    pub p0_x: f64,
+    pub p0_y: f64,
+    pub p1_x: f64,
+    pub p1_y: f64,
+}
+
+#[wasm_bindgen]
+impl WasmApp {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -&gt; Self { ... }
+    #[wasm_bindgen(js_name = addPoint)]
+    pub fn add_point(&amp;mut self, x: f64, y: f64) { ... }
+    pub fn calculate(&amp;mut self) -&gt; Result&lt;(), JsValue&gt; { ... }
+    pub fn clear(&amp;mut self) { ... }
+}
+</code></pre>
+<p>其中的 <code>js_name</code> 的作用为指定 JavaScript 调用时函数的名字。由于 Rust 和 JavaScript 对函数的 naming convensions 不一样，这个选项可以让代码在 Rust 和 JavaScript 两边都遵守主流的命名模式。</p>
+
+<p><code>Result&lt;(), JsValue&gt;</code> 是一个合法的返回值，参见 <a href="https://rustwasm.github.io/docs/wasm-bindgen/reference/types/result.html">wasm-bindgen guide</a> 中的说明。当 <code>Result</code> 的值为 <code>Ok(_)</code> 的时候正常返回，若为 <code>Err(_)</code>，则此函数在 JavaScript 中抛出一个异常，可以使用 <code>try</code>-<code>catch</code> 来处理。</p>
+
+<p>这样在 JavaScript 中只需调用 <code>WasmApp</code> 的方法，不再需要分开存储点的坐标了。不过因为目前无法返回一个 tuple，所以返回值还是只能通过 <code>WasmApp</code> 的属性获得。</p>
+
+<h3 id="更好的解决方案">更好的解决方案</h3>
+<p>在 WebAssembly 中不止可以调用全局的 JavaScript 函数，还可以调用自己写的函数。所以可将唯一需要计算结果的地方，即将结果画在 canvas 上的这个过程封装成一个 JavaScript 函数，导入 Rust 并在计算完毕后调用这个函数，这样就不需要将计算的结果传回 JavaScript 了。</p>
+<pre><code class="language-rust">#[wasm_bindgen(module = "/www/present.js")]
+extern "C" {
+    #[wasm_bindgen(js_name = presentResult)]
+    fn present_result(dist: f64, p0_x: f64, p0_y: f64, p1_x: f64, p1_y: f64);
+}
+</code></pre>
+<p><code>module</code> 路径写法的详细解释见 <a href="https://rustwasm.github.io/docs/wasm-bindgen/reference/js-snippets.html">文档</a>，这里开头的 <code>/</code> 相对于项目的根目录。</p>
+
+<p><code>www/present.js</code> 要写成一个 ES module, 即</p>
+<pre><code class="language-javascript">export function presentResult(dist, p0_x, p0_y, p1_x, p1_y) {
+    // ...
+}
+</code></pre>
+<p>这样在 Rust 中使用 <code>present_result(...)</code> 即可达到在 JavaScript 中调用 <code>presentResult</code> 的效果。<code>WasmApp</code> 中除了 <code>points</code> 之外的域都可以删除了。</p>
+
+<h2 id="部署">部署</h2>
+<p>这个项目使用 <a href="https://webpack.js.org/">webpack</a> 部署 WebAssembly 应用，webpack 也是官网的 <a href="https://rustwasm.github.io/docs/book/">tutorial</a> 使用的工具。用命令 <code>npm build</code> 即可得到 <code>dist</code> 目录，将其复制到目标服务器上即可。还要注意的是目标服务器需要将 <code>*.wasm</code> 的 MIME 类型设置为 <code>application/wasm</code>。我使用了一个与此博客类似的 Travis CI 配置来自动地在我向此项目的 <a href="https://github.com/weirane/closest-pair-wasm">仓库</a> push 的时候编译并部署到 <a href="https://weirane.github.io/closest-pair-wasm/">GitHub Pages</a> 上。</p>
+
+<p>最终结果：🎉</p>
+
+<p><img src="/images/2-rust-wasm-cp/demo.png" alt="demo"></p>
+
+<p>之后我还打算给这个 canvas 加一个 grid 让距离值看起来更直观，目前就这样吧。</p>
+
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/rust" class="page__taxonomy-item" rel="tag">rust</a><span class="sep">, </span>
+    
+      <a href="/tags/wasm" class="page__taxonomy-item" rel="tag">wasm</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/categories/programming" class="page__taxonomy-item" rel="tag">Programming</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-09-11">September 11, 2024</time></p>
+
+
+      </footer>
+
+      
+
+      
+  
+    <nav class="pagination">
+      
+        <a href="/2019/10/first-blog.html" class="pagination--pager" title="第一篇博客
+">Previous</a>
+      
+      
+        <a href="/2020/01/switch-from-gnome-to-i3.html" class="pagination--pager" title="从 GNOME 迁移到 i3
+">Next</a>
+      
+    </nav>
+  
+
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <section id="isso-thread"></section>
+
+  
+</div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/09/starting-notorious-rbg.html" rel="permalink">开始读《异见时刻》
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-09-08T00:00:00+08:00">September 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">打算开始读《异见时刻：“声名狼藉” 的金斯伯格大法官》。这是一本前美国最高法院大法官 Ruth Bader Ginsburg (RBG) 的传记。RBG 是美国最高法院第二位女性大法官。最开始听说 RBG 是在詹青云做客鲁豫的一集播客中（岩中花述 S5E1，03/12/2024）。当时好像正好是在 DC 市里面逛...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/08/cultural-differences.html" rel="permalink">中美文化差异
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-08-08T00:00:00+08:00">August 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          12 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近看了不少中国哲学的书和视频，想来结合我的经历说一下我浅薄的理解。我主要看的是复旦的王德峰老师的视频。最开始看王德峰老师是从他的 “中西方文化差异的渊源” 入坑的，然后又陆续看了马克思哲学、阳明心学、艺术哲学等等课程，感觉非常长脑子。他有很多片段在 B 站上都很火，特别是讲金刚经三句义的那一段。有兴趣的可以去搜...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/12/functional.html" rel="permalink">关于基于表达式的编程语言的一些思考
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-12-25T00:00:00+08:00">December 25, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近学 Go 语言又想起之前看过的一个 talk，presenter 说他几乎不用 else 关键字。因为一般情况下，if 语句的其中一个 branch 会比较短（比如处理特殊情况），这样可以在这个 branch 结束后直接从函数返回，后续的代码就不需要进行缩进了，如
+func fact(n int) int {...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/08/bwrap-wps.html" rel="permalink">使用 bwrap 隔离 WPS Office
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-08-20T00:00:00+08:00">August 20, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">看到依云在 博客 中提到了非特权沙盒工具 bwrap。博客的结尾提到可以用它来跑一些不太干净的软件，便来配置一下 WPS Office。
+
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li>
+            <a href="https://t.me/wrc_notebook" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-telegram" aria-hidden="true"></i>Telegram Channel
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://m.cmx.im/@weirane" target="_blank" rel="me nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-mastodon" aria-hidden="true"></i>Mastodon
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://github.com/weirane" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github" aria-hidden="true"></i>GitHub
+            </a>
+          </li>
+        
+      
+        
+      
+    
+
+    <li>
+      <a href="/feed.xml">
+        <i class="fas fa-fw fa-rss-square" aria-hidden="true"></i>Feed
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">
+  Copyright © 2025 Ruochen Wang <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  <br>
+  Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+  <br>
+  <a href="/status/">Site version 04398ad</a>
+  <br>
+  <a href="/sitemap.xml">Sitemap (XML)</a>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <script data-goatcounter="https://stats.ruo-chen.wang/count" async src="//stats.ruo-chen.wang/count.js"></script>
+
+
+
+
+
+
+    <script data-isso="https://isso.ruo-chen.wang" src="https://isso.ruo-chen.wang/js/embed.min.js" async></script>
+
+
+
+
+
+
+
+  </body>
+</html>

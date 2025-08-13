@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="zh" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>从零开始的 λ 演算 | weirane’s blog</title>
+<meta name="description" content="A summary of the PyCon talk “Lambda Calculus from the Ground Up”">
+
+
+  <meta name="author" content="weirane">
+  
+  <meta property="article:author" content="weirane">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="weirane's blog">
+<meta property="og:title" content="从零开始的 λ 演算">
+<meta property="og:url" content="https://blog.ruo-chen.wang/2021/04/lambda-calculus-from-the-ground-up.html">
+
+
+  <meta property="og:description" content="A summary of the PyCon talk “Lambda Calculus from the Ground Up”">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2021-04-18T00:00:00+08:00">
+
+
+
+  <meta property="article:modified_time" content="2024-09-11T11:08:25+08:00">
+
+
+
+
+<link rel="canonical" href="https://blog.ruo-chen.wang/2021/04/lambda-calculus-from-the-ground-up.html">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ruochen Wang",
+      "url": "https://blog.ruo-chen.wang/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="weirane's blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/styles/gruvbox-light.css">
+<script src="/static/highlight.pack.js"></script>
+<script>
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          weirane's blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/">Home</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/tags/">Tags</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/images/avatar.png" alt="weirane" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">weirane</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Fairfax, VA</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+            <li><a href="https://github.com/weirane" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox">
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Pages</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+          
+            <li><a href="/about/"><i class="fas fa-fw fa-user-circle"></i> About</a></li>
+          
+            <li><a href="/reflinks/"><i class="fas fa-fw fa-link"></i> Referal links</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="从零开始的 λ 演算">
+    <meta itemprop="description" content="这是我在看完 PyCon 2019 演讲「Lambda Calculus from the Ground Up」之后做的一个文字版，原视频在 https://youtu.be/pkCLMl0e_0k。另见官网中的介绍，这里提供一个翻译。">
+    <meta itemprop="datePublished" content="2021-04-18T00:00:00+08:00">
+    <meta itemprop="dateModified" content="2024-09-11T11:08:25+08:00">
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">从零开始的 λ 演算
+</h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-04-18T00:00:00+08:00">April 18, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          15 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right sticky">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#%E8%A7%84%E5%88%99">规则</a></li>
+<li><a href="#%E5%B8%83%E5%B0%94%E5%80%BC1827">布尔值（18:27）</a></li>
+<li>
+<a href="#%E6%95%B0%E5%AD%973445">数字（34:45）</a><ul>
+<li><a href="#%E5%8A%A0%E6%B3%95%E5%92%8C%E4%B9%98%E6%B3%955002">加法和乘法（50:02）</a></li>
+<li><a href="#%E4%BA%8C%E5%85%83%E7%BB%8420349">二元组（2:03:49）</a></li>
+<li><a href="#%E5%87%8F%E6%B3%9521215">减法（2:12:15）</a></li>
+<li><a href="#%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AA%E6%95%B0%E6%98%AF%E5%90%A6%E4%B8%BA%E9%9B%B622412">判断一个数是否为零（2:24:12）</a></li>
+</ul>
+</li>
+<li>
+<a href="#%E9%80%92%E5%BD%9223013">递归（2:30:13）</a><ul>
+<li><a href="#%E6%83%B0%E6%80%A7%E6%B1%82%E5%80%BC23440">惰性求值（2:34:40）</a></li>
+<li><a href="#%E9%81%BF%E5%85%8D%E5%BC%95%E7%94%A8%E8%87%AA%E5%B7%B124730">避免引用自己（2:47:30）</a></li>
+<li><a href="#%E4%B8%8D%E5%8A%A8%E7%82%B930038">不动点（3:00:38）</a></li>
+<li><a href="#y-%E7%BB%84%E5%90%88%E5%AD%9031320">Y 组合子（3:13:20）</a></li>
+</ul>
+</li>
+<li><a href="#%E8%A1%A5%E5%85%85">补充</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>这是我在看完 PyCon 2019 演讲「Lambda Calculus from the Ground Up」之后做的一个文字版，原视频在 <a href="https://youtu.be/pkCLMl0e_0k" target="_blank">https://youtu.be/pkCLMl0e_0k <i class="fas fa-external-link-square-alt"></i></a>。另见官网中的
+<a href="https://pycon-archive.python.org/2019/schedule/presentation/79/">介绍</a>，这里提供一个翻译。</p>
+
+<blockquote>
+  <p>最近关于编程风格的指南层出不穷。但是如果我们把风格限制为只允许出现单参数的函数会发生什么呢？没有模组，没有类，没有控制流，没有数据结构，甚至连整数、正则表达式等内建类型都没有，只有函数。用这种风格能写出程序吗？令人惊讶的是，答案是肯定的。在这个教程中，你将学到如何从零开始在 Python 中推导 λ 演算。</p>
+
+  <p>你不会在这个教程中学到有实际用处的东西。没有打包，没有工具，没有库，没有部署，也没有神奇的 Python 编程技术。你也不会学到会被你用在实际项目上的东西。但是你将获得很多乐趣，将感到惊叹，并学习一些基础的计算机科学，这是你进一步探索函数式编程、类型理论、编程语言等话题的起点。</p>
+</blockquote>
+
+<h2 id="规则">规则</h2>
+
+<p>如上介绍所说，我们只允许函数调用，或者参数替换这一种操作。以下列举一些不被允许的操作：</p>
+
+<pre><code class="language-python">def f(x):
+    return x + 1  # 不允许使用数字和运算符 +
+
+def f(x, y):
+    ...  # 只允许单个参数
+</code></pre>
+
+<p>以下是一些合法的操作，但是他们好像没什么意义：</p>
+
+<pre><code class="language-python">def f(x):
+    return x
+
+def f(x):
+    return x(x)
+
+def f(x):
+    def g(y):
+        return x(y)
+    return g
+</code></pre>
+
+<p>所以在这样的一个如此抽象的系统中，我们可以做些什么？</p>
+
+<h2 id="布尔值1827">布尔值（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=18m27s">18:27</a>）</h2>
+
+<p>首先来构造布尔值和布尔运算。可以借用选择器的概念来构造布尔值。<code>TRUE</code> 选择两个值中的第一个，而 <code>FALSE</code> 选择第二个。注意这里的 <code>TRUE</code> 和 <code>FALSE</code> 并不是一个具体的值，而是一种行为。</p>
+
+<pre><code class="language-python">def TRUE(x):
+    return lambda y: x
+
+def FALSE(x):
+    return lambda y: y
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; TRUE('5v')('gnd')
+'5v'
+&gt;&gt;&gt; FALSE('5v')('gnd')
+'gnd'
+</code></pre>
+
+<p>接下来是布尔运算 <code>NOT</code>, <code>AND</code> 和 <code>OR</code>。注意到 <code>NOT</code> 的参数应该是 <code>TRUE</code> 或者
+<code>FALSE</code>，它们都是需要两个输入的函数（<a href="https://en.wikipedia.org/wiki/Currying">柯里化</a>的）。然后根据 <code>TRUE</code> 和
+<code>FALSE</code> 在两个值中的选择情况便可构造出 <code>NOT</code>。</p>
+
+<pre><code class="language-python">def NOT(x):
+    return x(FALSE)(TRUE)
+</code></pre>
+
+<p>对于 <code>AND</code>，在它的第一个参数为 <code>TRUE</code> 的时候，值就等于第二个参数；在第一个参数为
+<code>FALSE</code> 的时候，值为 <code>FALSE</code>（也就是它的第一个参数）。<code>OR</code> 可以根据类似的思想写出：</p>
+
+<pre><code class="language-python">def AND(x):
+    return lambda y: x(y)(x)
+
+def OR(x):
+    return lambda y: x(x)(y)
+</code></pre>
+
+<details>
+  <summary>布尔运算演示</summary>
+  <pre><code class="language-python-repl">&gt;&gt;&gt; NOT(TRUE)
+&lt;function FALSE(x)&gt;
+&gt;&gt;&gt; NOT(FALSE)
+&lt;function TRUE(x)&gt;
+</code></pre>
+
+  <pre><code class="language-python-repl">&gt;&gt;&gt; AND(TRUE)(TRUE)
+&lt;function TRUE(x)&gt;
+&gt;&gt;&gt; AND(TRUE)(FALSE)
+&lt;function FALSE(x)&gt;
+&gt;&gt;&gt; AND(FALSE)(TRUE)
+&lt;function FALSE(x)&gt;
+&gt;&gt;&gt; AND(FALSE)(FALSE)
+&lt;function FALSE(x)&gt;
+</code></pre>
+
+  <pre><code class="language-python-repl">&gt;&gt;&gt; OR(TRUE)(TRUE)
+&lt;function TRUE(x)&gt;
+&gt;&gt;&gt; OR(TRUE)(FALSE)
+&lt;function TRUE(x)&gt;
+&gt;&gt;&gt; OR(FALSE)(TRUE)
+&lt;function TRUE(x)&gt;
+&gt;&gt;&gt; OR(FALSE)(FALSE)
+&lt;function FALSE(x)&gt;
+</code></pre>
+</details>
+
+<h2 id="数字3445">数字（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=34m45s">34:45</a>）</h2>
+
+<p>因为我们能够做的只有函数调用，所以可以尝试用调用函数的次数表示数字，比如
+<code>TWO(f)(x)</code> 的含义是以 <code>x</code> 为初始值，调用 <code>f</code> 两次：</p>
+<pre><code class="language-python">ONE = lambda f: lambda x: f(x)
+TWO = lambda f: lambda x: f(f(x))
+THREE = lambda f: lambda x: f(f(f(x)))
+FOUR = lambda f: lambda x: f(f(f(f(x))))
+</code></pre>
+
+<p>零表示为调用函数零次，即不调用函数：</p>
+<pre><code class="language-python">ZERO = lambda f: lambda x: x
+</code></pre>
+
+<p>为了能够方便地展示我们的系统中的数字，在此写一个函数用来将系统中的数字转为
+Python 中的一个 <code>int</code>。这个函数并不在 λ 演算系统中，只是为了方便地查看系统中的数字。</p>
+<pre><code class="language-python">def toint(n):
+    return n(lambda x: x + 1)(0)
+</code></pre>
+
+<pre><code class="language-python">&gt;&gt;&gt; toint(THREE)
+3
+</code></pre>
+
+<h3 id="加法和乘法5002">加法和乘法（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=50m02s">50:02</a>）</h3>
+
+<p>使用 <a href="https://en.wikipedia.org/wiki/Peano_axioms">Peano 公理</a> 的思想，先实现一个数字的后继。</p>
+<pre><code class="language-python">SUCC = lambda n: lambda f: lambda x: f(n(f)(x))
+</code></pre>
+
+<p>在这个实现中，<code>SUCC</code> 的返回值是一个数（因为拥有 <code>lambda f: lambda x: xxx</code> 这样的「接口」），而这个返回的数是以 <code>x</code> 为初始值调用了 <code>n</code> 次函数 <code>f</code>（用 <code>n(f)(x)</code>
+表示）后又多调用了 <code>f</code> 一次的结果，所以表示 <em>n</em> + 1。</p>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; toint(SUCC(THREE))
+4
+</code></pre>
+
+<p>有了 <code>SUCC</code> 就可以实现加法了。<em>x</em> + <em>y</em> 就是在 <em>x</em> 的基础上调用 <em>y</em> 次
+<code>SUCC</code>。而数字的行为正好是调用某个函数多少次。</p>
+<pre><code class="language-python">ADD = lambda x: lambda y: y(SUCC)(x)
+</code></pre>
+
+<p>乘法就是将「调用函数 <code>f</code> <em>x</em> 次」（即 <code>x(f)</code> 这个行为）重复 <em>y</em> 次：</p>
+<pre><code class="language-python">MUL = lambda x: lambda y: lambda f: y(x(f))
+</code></pre>
+
+<p>从上面的定义可以看出乘法就是用<a href="https://en.wikipedia.org/wiki/Function_composition">函数的复合</a>，即 <code>MUL x y = y ∘ x</code>。</p>
+
+<p>加法和乘法的演示：</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; toint(ADD(FOUR)(THREE))
+7
+&gt;&gt;&gt; toint(MUL(FOUR)(THREE))
+12
+</code></pre>
+
+<h3 id="二元组20349">二元组（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=2h03m49s">2:03:49</a>）</h3>
+
+<p>为了实现减法，我们需要先实现二元组。</p>
+
+<p><code>CONS(a)(b)</code> 将会返回一个「选择器」，这个选择器根据给它的参数选择 <code>a</code> 和 <code>b</code> 中的一个。这里的函数名借用了 Lisp 中的名字。</p>
+<pre><code class="language-python">CONS = lambda a: lambda b: (lambda s: s(a)(b))
+CAR = lambda p: p(TRUE)
+CDR = lambda p: p(FALSE)
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; p = CONS(2)(3)
+&gt;&gt;&gt; CAR(p)
+2
+&gt;&gt;&gt; CDR(p)
+3
+</code></pre>
+
+<p>这里的 <code>CONS</code> 接受两个参数并构造了一个二元组，<code>CAR</code> 和 <code>CDR</code> 分别取二元组中的第一个和第二个值。</p>
+
+<h3 id="减法21215">减法（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=2h12m15s">2:12:15</a>）</h3>
+
+<p>下面借助二元组来实现一个数的前驱。我们可以从 (0, 0) 开始增加，(1, 0), (2, 1) ……
+二元组的第二个数是第一个数的前驱，而第一个数就是增加的次数。</p>
+
+<pre><code class="language-python">T = lambda p: CONS(SUCC(CAR(p)))(CAR(p))
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; a = FOUR(T)(CONS(ZERO)(ZERO))
+&gt;&gt;&gt; toint(CAR(a))
+4
+&gt;&gt;&gt; toint(CDR(a))
+3
+</code></pre>
+
+<p>上面的 <code>a</code> 是从 (0, 0) 开始执行了函数 <code>T</code> 4 次后的结果，它本身是一个二元组，第二个值就是 4 的前驱 3。于是实现前驱的方式为从 <code>CONS(ZERO)(ZERO)</code> 开始执行函数
+<code>T</code> <code>n</code> 次，再取二元组的第二个值：</p>
+<pre><code class="language-python">PRED = lambda n: CDR(n(T)(CONS(ZERO)(ZERO)))
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; a = FOUR(THREE)
+&gt;&gt;&gt; toint(a)
+81
+&gt;&gt;&gt; b = PRED(a)
+&gt;&gt;&gt; toint(b)
+80
+</code></pre>
+
+<p>然后仿造加法构造减法：</p>
+<pre><code class="language-python">SUB = lambda x: lambda y: y(PRED)(x)
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; a = SUB(FOUR)(TWO)
+&gt;&gt;&gt; toint(a)
+2
+</code></pre>
+
+<h3 id="判断一个数是否为零22412">判断一个数是否为零（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=2h24m12s">2:24:12</a>）</h3>
+
+<p>由于 <code>ZERO</code> 的行为是直接返回第二个输入，所以下面的第二个括号中为 <code>TRUE</code>。而其它的数都会调用第一个输入，所以直接让这个输入返回 <code>FALSE</code>。</p>
+<pre><code class="language-python">ISZERO = lambda n: n(lambda _: FALSE)(TRUE)
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; ISZERO(ZERO)
+&lt;function TRUE(x)&gt;
+&gt;&gt;&gt; ISZERO(ONE)
+&lt;function FALSE(x)&gt;
+</code></pre>
+
+<h2 id="递归23013">递归（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=2h30m13s">2:30:13</a>）</h2>
+
+<p>我们已经有了 <code>AND</code>, <code>SUCC</code>, <code>ADD</code>, <code>CONS</code>, <code>CAR</code> 和 <code>ISZERO</code> 等等函数，现在我们要来挑战写出阶乘函数。阶乘在普通 Python 中的一种写法是</p>
+<pre><code class="language-python">fact = lambda n: 1 if n == 0 else n * fact(n-1)
+</code></pre>
+
+<p>它只用了判断是否为零，乘法和减法三种操作。把它转化为 λ 演算中的形式，得到</p>
+<pre><code class="language-python">FACT = lambda n: ISZERO(n) \
+                 (ONE) \
+                 (MUL(n)(FACT(PRED(n))))
+</code></pre>
+
+<p>但是这个实现有问题：</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; FACT(THREE)
+RecursionError: maximum recursion depth exceeded
+</code></pre>
+
+<h3 id="惰性求值23440">惰性求值（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=2h34m40s">2:34:40</a>）</h3>
+
+<p>原因是 Python 函数不是惰性求值（lazy）的，递归发生在 <code>ISZERO</code> 判断之前。为了规避这个限制，我们实现以下的 lazy 版本</p>
+<pre><code class="language-python">L_TRUE = lambda x: lambda y: x()
+L_FALSE = lambda x: lambda y: y()
+L_ISZERO = lambda n: n(lambda _: L_FALSE)(L_TRUE)
+
+FACT = lambda n: L_ISZERO(n) \
+                 (lambda: ONE) \
+                 (lambda: MUL(n)(FACT(PRED(n))))
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; a = FACT(THREE)
+&gt;&gt;&gt; toint(a)
+6
+</code></pre>
+
+<h3 id="避免引用自己24730">避免引用自己（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=2h47m30s">2:47:30</a>）</h3>
+
+<p>目前还有一个问题，在 λ 演算中没有全局变量，没有把值「存储」在一个变量中的概念。而我们在 <code>FACT</code> 的定义中使用了 <code>FACT</code> 这个名字。</p>
+
+<div class="notice--info">
+  <p><i class="fas fa-question-circle"></i>
+<strong>我们也用了 <code>ISZERO</code> 和 <code>ONE</code> 等等名字啊？</strong></p>
+
+  <p>事实上这些名字不需要存储的概念。可以把所有出现了 <code>ONE</code> 的地方换成它的定义（相当于 <code>:%s/\&lt;ONE\&gt;/(lambda f:lambda x:f(x))/g</code>）而程序还是会正确运行。而不能换
+<code>FACT</code> 的原因是它的定义本身就使用了 <code>FACT</code> 这个名字。</p>
+</div>
+
+<p>如何在实现 <code>FACT</code> 的时候不引用它自己的名字？为了方便先用 <code>fact</code> 函数来试验，我们不希望在下面的实现中出现 <code>fact</code>：</p>
+<pre><code class="language-python">fact = lambda n: 1 if n == 0 else n * fact(n-1)
+#                                     ^^^^ bad
+</code></pre>
+
+<p>一种方式是把 <code>fact</code> 作为参数传进去，但是这样还是用了 <code>fact</code> 这个名字，而且这个写法在 <code>fact</code> 还没定义的时候就使用了它。</p>
+<pre><code class="language-python">fact = (lambda f: lambda n: 1 if n == 0 else n * f(n-1)) \
+       (fact)
+#       ^^^^ ?
+</code></pre>
+
+<p>解决方案是直接复制粘贴，而不是把自己的名字传进参数：</p>
+<pre><code class="language-python">fact = (lambda f: lambda n: 1 if n == 0 else n * f(n-1)) \
+       (lambda f: lambda n: 1 if n == 0 else n * f(n-1))
+</code></pre>
+
+<p>我们还需要修正一下 <code>f</code> 的调用方法（因为需要先传入 <code>f</code> 再传入 <code>n</code>）。下面是最终的结果：</p>
+<pre><code class="language-python">fact = (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1)) \
+       (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1))
+#                                                ^^^^
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; fact(4)
+24
+</code></pre>
+
+<p>可以把 <code>fact</code> 直接换成它的定义：</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1)) \
+... (lambda f: lambda n: 1 if n == 0 else n * f(f)(n-1))(4)
+24
+</code></pre>
+
+<h3 id="不动点30038">不动点（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=3h00m38s">3:00:38</a>）</h3>
+
+<p>以上的实现有一点不好，它把一个很长的括号重复了两次。我们也可以借助不动点实现
+<code>fact</code>。</p>
+
+<p>回到之前尝试实现 <code>fact</code> 的时候，</p>
+<pre><code class="language-python">fact = (lambda f: lambda n: 1 if n == 0 else n * f(n-1))(fact)
+</code></pre>
+
+<p>如果把中间的部分抽出来</p>
+<pre><code class="language-python">R = lambda f: lambda n: 1 if n == 0 else n * f(n-1)
+</code></pre>
+
+<p>那么 <code>fact = R(fact)</code>，即 <code>fact</code> 是 <code>R</code> 的一个不动点。如果有一个可以计算不动点的函数，就可以得到 <code>fact</code> 了。</p>
+
+<p>假设这个函数存在，设它为 <code>Y</code>。那么有 <code>Y(R) = R(Y(R))</code>。变形：</p>
+<pre><code class="language-python">Y(R) = (lambda x: R(x))(Y(R))
+</code></pre>
+<p>仿照上一节中的做法，把括号中的表达式复制一遍，再修正一下 <code>x</code> 的调用方法：</p>
+<pre><code class="language-python">Y(R) = (lambda x: R(x))(lambda x: R(x))
+</code></pre>
+
+<pre><code class="language-python">Y(R) = (lambda x: R(x(x)))(lambda x: R(x(x)))
+</code></pre>
+
+<p>那么我们就得到了 <code>Y</code></p>
+<pre><code class="language-python">Y = lambda f: (lambda x: f(x(x)))(lambda x: f(x(x)))
+</code></pre>
+
+<h3 id="y-组合子31320">Y 组合子（<a href="https://www.youtube.com/watch?v=pkCLMl0e_0k&amp;t=3h13m20s">3:13:20</a>）</h3>
+
+<p>这里的 <code>Y</code> 就是著名的 <a href="https://en.wikipedia.org/wiki/Fixed-point_combinator#Fixed-point_combinators_in_lambda_calculus">Y 组合子</a>（Y combinator）。但是</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; R = lambda f: lambda n: 1 if n == 0 else n * f(n-1)
+&gt;&gt;&gt; fact = Y(R)
+RecursionError: maximum recursion depth exceeded
+</code></pre>
+
+<p>要解决这个问题，可以把 <code>x(x)</code> 换成 <code>lambda z: x(x)(z)</code>，它可以延后 <code>x</code> 的求值。</p>
+<pre><code class="language-python">Y = lambda f: (lambda x: f(lambda z: x(x)(z)))(lambda x: f(lambda z: x(x)(z)))
+</code></pre>
+
+<pre><code class="language-python-repl">&gt;&gt;&gt; R = lambda f: lambda n: 1 if n == 0 else n * f(n-1)
+&gt;&gt;&gt; fact = Y(R)
+&gt;&gt;&gt; fact(4)
+24
+</code></pre>
+
+<p>把 <code>Y</code> 用在其它函数上：</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; fib = Y(lambda f: lambda n: 1 if n &lt;= 2 else f(n-1) + f(n-2))
+&gt;&gt;&gt; fib(10)
+55
+</code></pre>
+
+<p>实现 <code>FACT</code>：</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; FACT = Y(
+...     lambda f: lambda n: L_ISZERO(n) \
+...                         (lambda: ONE) \
+...                         (lambda: MUL(n)(f(PRED(n))))
+... )
+&gt;&gt;&gt; a = FACT(FOUR)
+&gt;&gt;&gt; toint(a)
+24
+</code></pre>
+
+<p>本文中的代码已整理到 <a href="https://gist.github.com/weirane/62a976baab7f4e56a4b5de596d41177e">Gist</a> 上。</p>
+
+<h2 id="补充">补充</h2>
+
+<p><a href="#%E6%83%B0%E6%80%A7%E6%B1%82%E5%80%BC23440">惰性求值</a> 一节中也可以使用另一种方法。参考 <a href="#y-%E7%BB%84%E5%90%88%E5%AD%9031320">Y 组合子</a>
+一节，用 <code>lambda x: f(x)</code> 代替 <code>f</code>，这样不需要新定义 lazy 版本的函数。因为万物皆是函数，所以不需要担心 <code>f(x)</code> 因为 <code>f</code> 不是函数而出错。</p>
+
+<pre><code class="language-python">FACT = lambda n: ISZERO(n) \
+                 (lambda x: ONE(x)) \
+                 (lambda x: MUL(n)(FACT(PRED(n)))(x))
+</code></pre>
+<pre><code class="language-python">FACT = Y(
+    lambda f: lambda n: ISZERO(n) \
+                        (lambda x: ONE(x)) \
+                        (lambda x: MUL(n)(f(PRED(n)))(x))
+)
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<ul>
+  <li>这里推导的 λ 演算没有什么实际用途，没有谁会用这里的 λ 演算写一个现实中使用的程
+  序；</li>
+  <li>但是 λ 演算的思想在函数式语言中随处可见，非函数式语言也都在慢慢吸收函数式语言
+  中的一些的思想和概念；</li>
+  <li>λ 演算就像机器语言一样。现在绝大多数人都在写高级语言，但是高级语言在某种程度上
+  是机器语言的抽象，了解一些机器语言或者汇编的知识有助于写出更好，效率更高的代
+  码。类似地，了解 λ 演算对理解和运用函数式语言和其它语言中的函数式元素是很有
+  益的。</li>
+</ul>
+
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/functional-programming" class="page__taxonomy-item" rel="tag">functional-programming</a><span class="sep">, </span>
+    
+      <a href="/tags/lambda-calculus" class="page__taxonomy-item" rel="tag">lambda-calculus</a><span class="sep">, </span>
+    
+      <a href="/tags/python" class="page__taxonomy-item" rel="tag">python</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/categories/programming" class="page__taxonomy-item" rel="tag">Programming</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-09-11">September 11, 2024</time></p>
+
+
+      </footer>
+
+      
+
+      
+  
+    <nav class="pagination">
+      
+        <a href="/2021/03/switch-from-manjaro-to-arch.html" class="pagination--pager" title="从 Manjaro 迁移到 Arch Linux
+">Previous</a>
+      
+      
+        <a href="/2021/08/bwrap-wps.html" class="pagination--pager" title="使用 bwrap 隔离 WPS Office
+">Next</a>
+      
+    </nav>
+  
+
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <section id="isso-thread"></section>
+
+  
+</div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/09/starting-notorious-rbg.html" rel="permalink">开始读《异见时刻》
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-09-08T00:00:00+08:00">September 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">打算开始读《异见时刻：“声名狼藉” 的金斯伯格大法官》。这是一本前美国最高法院大法官 Ruth Bader Ginsburg (RBG) 的传记。RBG 是美国最高法院第二位女性大法官。最开始听说 RBG 是在詹青云做客鲁豫的一集播客中（岩中花述 S5E1，03/12/2024）。当时好像正好是在 DC 市里面逛...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/08/cultural-differences.html" rel="permalink">中美文化差异
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-08-08T00:00:00+08:00">August 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          12 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近看了不少中国哲学的书和视频，想来结合我的经历说一下我浅薄的理解。我主要看的是复旦的王德峰老师的视频。最开始看王德峰老师是从他的 “中西方文化差异的渊源” 入坑的，然后又陆续看了马克思哲学、阳明心学、艺术哲学等等课程，感觉非常长脑子。他有很多片段在 B 站上都很火，特别是讲金刚经三句义的那一段。有兴趣的可以去搜...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/12/functional.html" rel="permalink">关于基于表达式的编程语言的一些思考
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-12-25T00:00:00+08:00">December 25, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近学 Go 语言又想起之前看过的一个 talk，presenter 说他几乎不用 else 关键字。因为一般情况下，if 语句的其中一个 branch 会比较短（比如处理特殊情况），这样可以在这个 branch 结束后直接从函数返回，后续的代码就不需要进行缩进了，如
+func fact(n int) int {...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/08/bwrap-wps.html" rel="permalink">使用 bwrap 隔离 WPS Office
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-08-20T00:00:00+08:00">August 20, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">看到依云在 博客 中提到了非特权沙盒工具 bwrap。博客的结尾提到可以用它来跑一些不太干净的软件，便来配置一下 WPS Office。
+
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li>
+            <a href="https://t.me/wrc_notebook" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-telegram" aria-hidden="true"></i>Telegram Channel
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://m.cmx.im/@weirane" target="_blank" rel="me nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-mastodon" aria-hidden="true"></i>Mastodon
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://github.com/weirane" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github" aria-hidden="true"></i>GitHub
+            </a>
+          </li>
+        
+      
+        
+      
+    
+
+    <li>
+      <a href="/feed.xml">
+        <i class="fas fa-fw fa-rss-square" aria-hidden="true"></i>Feed
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">
+  Copyright © 2025 Ruochen Wang <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  <br>
+  Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+  <br>
+  <a href="/status/">Site version 04398ad</a>
+  <br>
+  <a href="/sitemap.xml">Sitemap (XML)</a>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <script data-goatcounter="https://stats.ruo-chen.wang/count" async src="//stats.ruo-chen.wang/count.js"></script>
+
+
+
+
+
+
+    <script data-isso="https://isso.ruo-chen.wang" src="https://isso.ruo-chen.wang/js/embed.min.js" async></script>
+
+
+
+
+
+
+
+  </body>
+</html>

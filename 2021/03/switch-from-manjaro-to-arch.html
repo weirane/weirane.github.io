@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="zh" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>从 Manjaro 迁移到 Arch Linux | weirane’s blog</title>
+<meta name="description" content="Switch from Manjaro to Arch Linux with LUKS and Btrfs">
+
+
+  <meta name="author" content="weirane">
+  
+  <meta property="article:author" content="weirane">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="weirane's blog">
+<meta property="og:title" content="从 Manjaro 迁移到 Arch Linux">
+<meta property="og:url" content="https://blog.ruo-chen.wang/2021/03/switch-from-manjaro-to-arch.html">
+
+
+  <meta property="og:description" content="Switch from Manjaro to Arch Linux with LUKS and Btrfs">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2021-03-21T00:00:00+08:00">
+
+
+
+  <meta property="article:modified_time" content="2024-09-11T11:08:25+08:00">
+
+
+
+
+<link rel="canonical" href="https://blog.ruo-chen.wang/2021/03/switch-from-manjaro-to-arch.html">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ruochen Wang",
+      "url": "https://blog.ruo-chen.wang/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="weirane's blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/styles/gruvbox-light.css">
+<script src="/static/highlight.pack.js"></script>
+<script>
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          weirane's blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/">Home</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/tags/">Tags</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/images/avatar.png" alt="weirane" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">weirane</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Fairfax, VA</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+            <li><a href="https://github.com/weirane" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox">
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Pages</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+          
+            <li><a href="/about/"><i class="fas fa-fw fa-user-circle"></i> About</a></li>
+          
+            <li><a href="/reflinks/"><i class="fas fa-fw fa-link"></i> Referal links</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="从 Manjaro 迁移到 Arch Linux">
+    <meta itemprop="description" content="今天我把系统换成了 Arch Linux，用的是 Btrfs 文件系统，套上 LUKS 加密（加密包括/boot）。由于我已经在虚拟机里面实验过整个过程，所以今天的安装过程非常顺利，一共只用了一两个小时。">
+    <meta itemprop="datePublished" content="2021-03-21T00:00:00+08:00">
+    <meta itemprop="dateModified" content="2024-09-11T11:08:25+08:00">
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">从 Manjaro 迁移到 Arch Linux
+</h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-03-21T00:00:00+08:00">March 21, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          7 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right sticky">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#%E8%83%8C%E6%99%AF">背景</a></li>
+<li><a href="#%E5%A4%87%E4%BB%BD">备份</a></li>
+<li>
+<a href="#%E5%AE%89%E8%A3%85">安装</a><ul>
+<li><a href="#installation-guide">Installation Guide</a></li>
+<li><a href="#%E9%A2%9D%E5%A4%96%E7%9A%84%E6%93%8D%E4%BD%9C">额外的操作</a></li>
+<li><a href="#%E5%90%8C%E6%AD%A5%E5%AE%B6%E7%9B%AE%E5%BD%95">同步家目录</a></li>
+<li><a href="#%E5%AE%89%E8%A3%85%E8%BD%AF%E4%BB%B6%E5%8C%85">安装软件包</a></li>
+</ul>
+</li>
+<li>
+<a href="#%E9%85%8D%E7%BD%AE">配置</a><ul>
+<li><a href="#%E5%8A%A0%E5%AF%86-swap">加密 swap</a></li>
+<li><a href="#key-in-initramfs">Key in initramfs</a></li>
+</ul>
+</li>
+<li>
+<a href="#%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98">解决问题</a><ul>
+<li><a href="#xbacklight">xbacklight</a></li>
+<li><a href="#redshift-%E6%97%A0%E6%B3%95%E4%BD%BF%E7%94%A8-geoclue">redshift 无法使用 geoclue</a></li>
+<li><a href="#%E5%B0%86-cache-%E5%8D%95%E7%8B%AC%E5%88%86%E4%B8%BA%E4%B8%80%E4%B8%AA%E5%AD%90%E5%8D%B7">将 ~/.cache 单独分为一个子卷</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+<li><a href="#%E5%8F%82%E8%80%83">参考</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>今天我把系统换成了 Arch Linux，用的是 Btrfs 文件系统，套上 LUKS 加密（加密包括
+<code>/boot</code>）。由于我已经在虚拟机里面实验过整个过程，所以今天的安装过程非常顺利，一共只用了一两个小时。</p>
+
+<ul>
+  <li>2021-03-25 更新：增加了 <a href="#redshift-%E6%97%A0%E6%B3%95%E4%BD%BF%E7%94%A8-geoclue">redshift 无法使用 geoclue</a> 一节</li>
+  <li>2021-04-18 更新：增加了 <a href="#%E5%B0%86-cache-%E5%8D%95%E7%8B%AC%E5%88%86%E4%B8%BA%E4%B8%80%E4%B8%AA%E5%AD%90%E5%8D%B7">将 <code>~/.cache</code> 单独分为一个子卷</a> 一节</li>
+</ul>
+
+<h2 id="背景">背景</h2>
+
+<p>前几天用 <code>btrfs-convert</code> 把我的 Manjaro 的文件系统换成了 Btrfs，然后继续开发我的
+Btrfs 快照管理工具 <a href="https://github.com/weirane/dosnap">dosnap</a>。奇怪的是，在出错的时候（如 <code>panic!</code>）程序不会退出
+，而是直接卡住。这还不是最致命的，过了几秒钟我发现我的 polybar 不见了，然后发现我的家目录里少了一些东西，包括 <code>~/.config</code>。还好我之前有做快照，可以直接用
+<code>rsync</code> 恢复数据。但是在我的一个 Arch Linux 虚拟机中程序如果出错会正确退出。不知道是为什么，可能是 <code>btrfs-convert</code> 的什么 bug。然后就想到用 Arch 虚拟机也有很长时间了，于是打算直接把物理机也换到 Arch Linux 上来。</p>
+
+<h2 id="备份">备份</h2>
+
+<p>可以使用 Btrfs 的 send/receive 功能进行备份。注意备份的移动硬盘也需要是 Btrfs 文件系统。先对各个子卷做只读快照，然后对每个快照进行 <code>btrfs send</code>：</p>
+
+<pre><code class="language-sh">sudo btrfs send /mnt/_snapshots/${SNAPSHOT_NAME?} | sudo btrfs receive ${EXTERNAL_DRIVE?}
+</code></pre>
+
+<p>然后再记录一下安装过的软件：</p>
+<pre><code class="language-sh">pacman -Qe &gt;${EXTERNAL_DRIVE?}/pacman-qe
+</code></pre>
+
+<h2 id="安装">安装</h2>
+
+<p>启动 archiso，然后调整一下终端字体</p>
+<pre><code class="language-sh">setfont ter-v28b
+</code></pre>
+
+<h3 id="installation-guide">Installation Guide</h3>
+
+<p>打开 <a href="https://wiki.archlinux.org/index.php/installation_guide">installation guide</a>，一直做到 Partition the disks 之前。</p>
+
+<p>由于磁盘已经分区，所以不需要再分区了。直接上 LUKS 并格式化为 Btrfs。注意需要用
+luks1，因为 GRUB 目前还不支持 LUKS2。</p>
+<pre><code class="language-sh">cryptsetup --type luks1 luksFormat /dev/nvme0n1p4
+cryptsetup open /dev/nvme0n1p4 archlinux
+mkfs.btrfs -L archlinux /dev/mapper/archlinux
+</code></pre>
+
+<p>然后创建子卷并挂载分区</p>
+<pre><code class="language-sh">mount /dev/mapper/archlinux /mnt
+btrfs subv create /mnt/@
+btrfs subv create /mnt/@home
+btrfs subv create /mnt/@opt
+btrfs subv create /mnt/@var
+umount /mnt
+
+opt='noatime,ssd,space_cache=v2,compress=zstd'
+mount -o $opt,subvol=@ /dev/mapper/archlinux /mnt
+mkdir /mnt/{efi,var,home,opt}
+mount /dev/nvme0n1p1 /mnt/efi
+mount -o $opt,subvol=@home /dev/mapper/archlinux /mnt/home
+mount -o $opt,subvol=@opt /dev/mapper/archlinux /mnt/opt
+mount -o $opt,subvol=@var /dev/mapper/archlinux /mnt/var
+</code></pre>
+
+<p>对 <code>/var/log/journal</code> 禁用 CoW：</p>
+<pre><code class="language-sh">mkdir -p /mnt/var/log/journal
+chattr +C /mnt/var/log/journal
+</code></pre>
+
+<p>然后从 installation guide 的 <a href="https://wiki.archlinux.org/index.php/installation_guide#Installation">Installation</a> 一节开始继续一直做到结尾，记得要在 <code>pacstrap</code> 的时候加上 <code>btrfs-progs</code>。</p>
+
+<h3 id="额外的操作">额外的操作</h3>
+
+<p>安装到这里还需一些额外的操作。更改 <code>/etc/mkinitcpio.conf</code> 的 <code>BINARIES</code>，然后在
+<code>HOOKS</code> 中的 <code>filesystems</code> 之前加入 <code>encrypt</code>：</p>
+<pre><code class="language-bash">BINARIES=(/usr/bin/btrfs)
+HOOKS=(base udev autodetect modconf block encrypt filesystems keyboard fsck)
+</code></pre>
+<p>然后重新生成 initramfs</p>
+<pre><code class="language-sh">mkinitcpio -P
+</code></pre>
+
+<p>更改 <code>/etc/default/grub</code> 中的内核命令行，这里我还顺便打开了 cgroup v2。
+<code>PARTUUID</code> 可以使用 <code>blkid</code> 命令查看。</p>
+<pre><code class="language-sh">GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet systemd.unified_cgroup_hierarchy=1"
+GRUB_CMDLINE_LINUX="cryptdevice=PARTUUID=xxx:archlinux"
+</code></pre>
+
+<h3 id="同步家目录">同步家目录</h3>
+
+<p>新建用户，并从备份中用 rsync 把家目录同步回来：</p>
+<pre><code class="language-sh"># run as wang
+rsync -a ${EXTERNAL_DRIVE?}/home-snap/wang/* ~
+rsync -a ${EXTERNAL_DRIVE?}/home-snap/wang/.* ~
+</code></pre>
+
+<h3 id="安装软件包">安装软件包</h3>
+
+<p>安装我自己常用的软件</p>
+<pre><code class="language-sh">cd ~/.dotfiles/weirane-dotfiles-deps
+makepkg -si
+</code></pre>
+
+<p>用下面的命令查看有哪些之前安装过而不在本机上的包，然后选择要安装的包并安装。</p>
+<pre><code class="language-sh">comm -23 &lt;(cut -d' ' -f1 ${EXTERNAL_DRIVE?}/pacman-qe | sort) \
+         &lt;(pacman -Qq | sort) | less
+</code></pre>
+
+<h2 id="配置">配置</h2>
+
+<p>下面进行一些增加安全性或者便携性的配置。</p>
+
+<h3 id="加密-swap">加密 swap</h3>
+
+<p>为防止关机后 swap 中残留明文的内存数据，需要将 swap 加密。我不需要 hibernation，所以参考 <a href="https://wiki.archlinux.org/index.php/Dm-crypt/Swap_encryption#Without_suspend-to-disk_support">ArchWiki</a>，将以下内容加入 <code>/etc/crypttab</code>：</p>
+<pre><code>swap  PARTUUID=xxx  /dev/urandom  swap,cipher=aes-xts-plain64,size=512
+</code></pre>
+
+<p>将原来 <code>/etc/fstab</code> 中 swap 的一行改为</p>
+<pre><code>/dev/mapper/swap        none            swap            defaults        0 0
+</code></pre>
+
+<h3 id="key-in-initramfs">Key in initramfs</h3>
+
+<p>可以在 initramfs 中放一个 LUKS key，这样在开机的时候就不需要输两次 LUKS 密码了。我一般将 key 放在 <code>/etc</code> 中。注意要调整 key file 和装有 key file 的 initramfs 的权限。</p>
+
+<pre><code class="language-sh">sudo dd bs=512 count=4 if=/dev/urandom of=/path/to/key
+sudo cryptsetup luksAddKey /dev/nvme0n1p4 /path/to/key
+chmod 000 /path/to/key
+chmod -R g-rwx,o-rwx /boot
+</code></pre>
+
+<p>把 key 加入 <code>/etc/mkinitcpio.conf</code> 中的 <code>FILES</code>：</p>
+<pre><code class="language-bash">FILES=(/path/to/key)
+</code></pre>
+
+<p>改 <code>/etc/default/grub</code> 中的内核命令行，加入 <code>cryptkey=rootfs:/path/to/key</code>：</p>
+<pre><code class="language-sh">GRUB_CMDLINE_LINUX="cryptdevice=PARTUUID=xxx:archlinux cryptkey=rootfs:/path/to/key"
+</code></pre>
+
+<p>最后重新生成 initramfs 和 GRUB config</p>
+<pre><code class="language-sh">sudo mkinitcpio -P
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+</code></pre>
+
+<h2 id="解决问题">解决问题</h2>
+
+<h3 id="xbacklight">xbacklight</h3>
+
+<p>进入图形界面后发现 polybar 中的亮度模块没有显示，<code>xbacklight</code> 命令没有输出。参考
+<a href="https://wiki.archlinux.org/index.php/Backlight#xbacklight">ArchWiki</a> 之后发现应该安装 <code>xf86-video-intel</code> 并将下面的配置写入
+<code>/etc/X11/xorg.conf.d/20-xbacklight.conf</code>：</p>
+<pre><code>Section "Device"
+    Identifier  "Intel Graphics"
+    Driver      "intel"
+    Option      "Backlight"  "intel_backlight"
+EndSection
+</code></pre>
+
+<h3 id="redshift-无法使用-geoclue">redshift 无法使用 geoclue</h3>
+
+<p>运行 <code>redshift</code> 有如下报错</p>
+<pre><code>Trying location provider `geoclue2'...
+Using provider `geoclue2'.
+Using method `randr'.
+Waiting for initial location to become available...
+Unable to start GeoClue client: GDBus.Error:org.freedesktop.DBus.Error.AccessDenied: 'redshift' disallowed, no agent for UID 1000.
+Access to the current location was denied by GeoClue!
+Make sure that location services are enabled and that Redshift is permitted
+to use location services. See https://github.com/jonls/redshift#faq for more
+information.
+Unable to get location from provider.
+</code></pre>
+
+<p>查阅 <a href="https://wiki.archlinux.org/index.php/Redshift#Redshift_GDBus.Error:org.freedesktop.DBus.Error.AccessDenied_on_start">ArchWiki</a>，将以下内容写入
+<code>~/.config/systemd/user/geoclue-agent.service</code></p>
+
+<pre><code class="language-ini">[Unit]
+Description=redshift needs to get a (geo)clue
+
+[Service]
+ExecStart=/usr/lib/geoclue-2.0/demos/agent
+
+[Install]
+WantedBy=default.target
+</code></pre>
+
+<p>运行命令 <code>systemctl --user enable --now geoclue-agent.service</code> 之后就可以使用
+redshift 了。</p>
+
+<h3 id="将-cache-单独分为一个子卷">将 <code>~/.cache</code> 单独分为一个子卷</h3>
+
+<p>我现在对我的家目录每两小时进行<a href="https://github.com/weirane/dosnap">快照</a>，用了一段时间后<a href="https://github.com/nachoparker/btrfs-du">发现</a>每个快照都有至少 30 MB 的 exclusive data。<a href="https://serverfault.com/a/580264">比较</a>后发现主要是 <code>~/.cache</code>
+中的数据，所以想把它单独分为一个子卷。</p>
+
+<p>登出当前用户，并在 tty 登陆 root 用户。把 <code>~/.cache</code> 这个目录空出来，并创建子卷</p>
+<pre><code class="language-sh">cd /home/wang
+mv .cache .cache2
+btrfs subv create /home/wang/.cache
+</code></pre>
+
+<p>然后把数据复制回来，再恢复权限。</p>
+<pre><code class="language-sh">cp -a --reflink .cache2/* .cache
+chown wang:wang .cache
+rm -r .cache2
+</code></pre>
+
+<p>分开 <code>~/.cache</code> 之后每两小时快照的 exclusive data 基本上在 20 MB 之下，效果还可以。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>整个过程挺顺利的，现在应该只剩一些之前在 <code>/etc</code> 中的配置没来得及同步了。由于家目录是直接 <code>rsync</code> 过来的，所以所有的数据都还在，家目录中的程序的配置也没有丢失，
+firefox 等程序也不需要重新登录或者进行其它的配置。</p>
+
+<h2 id="参考">参考</h2>
+
+<ul>
+  <li><a href="https://blog.lilydjwg.me/2019/3/31/move-system-to-ssd.214336.html">https://blog.lilydjwg.me/2019/3/31/move-system-to-ssd.214336.html</a></li>
+  <li><a href="https://gist.github.com/ansulev/7cdf38a3d387599adf9addd248b09db8">https://gist.github.com/ansulev/7cdf38a3d387599adf9addd248b09db8</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/archlinux" class="page__taxonomy-item" rel="tag">archlinux</a><span class="sep">, </span>
+    
+      <a href="/tags/btrfs" class="page__taxonomy-item" rel="tag">btrfs</a><span class="sep">, </span>
+    
+      <a href="/tags/luks" class="page__taxonomy-item" rel="tag">luks</a><span class="sep">, </span>
+    
+      <a href="/tags/redshift" class="page__taxonomy-item" rel="tag">redshift</a><span class="sep">, </span>
+    
+      <a href="/tags/swap" class="page__taxonomy-item" rel="tag">swap</a><span class="sep">, </span>
+    
+      <a href="/tags/xbacklight" class="page__taxonomy-item" rel="tag">xbacklight</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/categories/tweaks" class="page__taxonomy-item" rel="tag">Tweaks</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-09-11">September 11, 2024</time></p>
+
+
+      </footer>
+
+      
+
+      
+  
+    <nav class="pagination">
+      
+        <a href="/2021/01/pass.html" class="pagination--pager" title="使用 pass 管理密码
+">Previous</a>
+      
+      
+        <a href="/2021/04/lambda-calculus-from-the-ground-up.html" class="pagination--pager" title="从零开始的 λ 演算
+">Next</a>
+      
+    </nav>
+  
+
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <section id="isso-thread"></section>
+
+  
+</div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/09/starting-notorious-rbg.html" rel="permalink">开始读《异见时刻》
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-09-08T00:00:00+08:00">September 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">打算开始读《异见时刻：“声名狼藉” 的金斯伯格大法官》。这是一本前美国最高法院大法官 Ruth Bader Ginsburg (RBG) 的传记。RBG 是美国最高法院第二位女性大法官。最开始听说 RBG 是在詹青云做客鲁豫的一集播客中（岩中花述 S5E1，03/12/2024）。当时好像正好是在 DC 市里面逛...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/08/cultural-differences.html" rel="permalink">中美文化差异
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-08-08T00:00:00+08:00">August 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          12 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近看了不少中国哲学的书和视频，想来结合我的经历说一下我浅薄的理解。我主要看的是复旦的王德峰老师的视频。最开始看王德峰老师是从他的 “中西方文化差异的渊源” 入坑的，然后又陆续看了马克思哲学、阳明心学、艺术哲学等等课程，感觉非常长脑子。他有很多片段在 B 站上都很火，特别是讲金刚经三句义的那一段。有兴趣的可以去搜...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/12/functional.html" rel="permalink">关于基于表达式的编程语言的一些思考
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-12-25T00:00:00+08:00">December 25, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近学 Go 语言又想起之前看过的一个 talk，presenter 说他几乎不用 else 关键字。因为一般情况下，if 语句的其中一个 branch 会比较短（比如处理特殊情况），这样可以在这个 branch 结束后直接从函数返回，后续的代码就不需要进行缩进了，如
+func fact(n int) int {...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/08/bwrap-wps.html" rel="permalink">使用 bwrap 隔离 WPS Office
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-08-20T00:00:00+08:00">August 20, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">看到依云在 博客 中提到了非特权沙盒工具 bwrap。博客的结尾提到可以用它来跑一些不太干净的软件，便来配置一下 WPS Office。
+
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li>
+            <a href="https://t.me/wrc_notebook" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-telegram" aria-hidden="true"></i>Telegram Channel
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://m.cmx.im/@weirane" target="_blank" rel="me nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-mastodon" aria-hidden="true"></i>Mastodon
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://github.com/weirane" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github" aria-hidden="true"></i>GitHub
+            </a>
+          </li>
+        
+      
+        
+      
+    
+
+    <li>
+      <a href="/feed.xml">
+        <i class="fas fa-fw fa-rss-square" aria-hidden="true"></i>Feed
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">
+  Copyright © 2025 Ruochen Wang <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  <br>
+  Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+  <br>
+  <a href="/status/">Site version 04398ad</a>
+  <br>
+  <a href="/sitemap.xml">Sitemap (XML)</a>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <script data-goatcounter="https://stats.ruo-chen.wang/count" async src="//stats.ruo-chen.wang/count.js"></script>
+
+
+
+
+
+
+    <script data-isso="https://isso.ruo-chen.wang" src="https://isso.ruo-chen.wang/js/embed.min.js" async></script>
+
+
+
+
+
+
+
+  </body>
+</html>

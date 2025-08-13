@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="zh" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>合并挂载在 / 和 /home 的分区 | weirane’s blog</title>
+<meta name="description" content="Combine the partitions mounted on / and /home">
+
+
+  <meta name="author" content="weirane">
+  
+  <meta property="article:author" content="weirane">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="weirane's blog">
+<meta property="og:title" content="合并挂载在 / 和 /home 的分区">
+<meta property="og:url" content="https://blog.ruo-chen.wang/2020/02/combine-two-partitions.html">
+
+
+  <meta property="og:description" content="Combine the partitions mounted on / and /home">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2020-02-19T00:00:00+08:00">
+
+
+
+  <meta property="article:modified_time" content="2024-09-11T11:08:25+08:00">
+
+
+
+
+<link rel="canonical" href="https://blog.ruo-chen.wang/2020/02/combine-two-partitions.html">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ruochen Wang",
+      "url": "https://blog.ruo-chen.wang/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="weirane's blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/styles/gruvbox-light.css">
+<script src="/static/highlight.pack.js"></script>
+<script>
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          weirane's blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/">Home</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/tags/">Tags</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/images/avatar.png" alt="weirane" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">weirane</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Fairfax, VA</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+            <li><a href="https://github.com/weirane" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox">
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Pages</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+          
+            <li><a href="/about/"><i class="fas fa-fw fa-user-circle"></i> About</a></li>
+          
+            <li><a href="/reflinks/"><i class="fas fa-fw fa-link"></i> Referal links</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="合并挂载在 / 和 /home 的分区">
+    <meta itemprop="description" content="最近需要装一个很大的虚拟机，在导入 VirtualBox 的时候出现了「NS_ERROR_INVALID_ARG (0x80070057)」这个错误，上网查发现是因为硬盘空间不足。我的硬盘有 67G 的空闲空间，但是因为把 /home 单独分了一个分区，两个分区每个都有 30G 左右的剩余空间，无法充分利用。我的 / 和 /home 对应的分区是相连的，合并较为方便，便打算将这两个分区合并起来。以下是 df1 的结果：            这里的 df 是一个小函数，见我的 dotfiles 仓库 ↩      ">
+    <meta itemprop="datePublished" content="2020-02-19T00:00:00+08:00">
+    <meta itemprop="dateModified" content="2024-09-11T11:08:25+08:00">
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">合并挂载在 <code>/</code> 和 <code>/home</code> 的分区
+</h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2020-02-19T00:00:00+08:00">February 19, 2020</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right sticky">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#%E8%83%8C%E6%99%AF">背景</a></li>
+<li>
+<a href="#%E8%BF%87%E7%A8%8B">过程</a><ul>
+<li><a href="#%E5%A4%87%E4%BB%BD">备份</a></li>
+<li><a href="#%E8%BF%81%E7%A7%BB">迁移</a></li>
+<li><a href="#%E5%90%88%E5%B9%B6%E5%88%86%E5%8C%BA">合并分区</a></li>
+<li><a href="#%E5%AE%8C%E6%88%90">完成</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BB%93%E6%9E%9C">结果</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>最近需要装一个很大的虚拟机，在导入 VirtualBox 的时候出现了「<code>NS_ERROR_INVALID_ARG (0x80070057)</code>」这个错误，上网查发现是因为硬盘空间不足。我的硬盘有 67G 的空闲空间，但是因为把 <code>/home</code> 单独分了一个分区，两个分区每个都有 30G 左右的剩余空间，无法充分利用。我的 <code>/</code> 和 <code>/home</code> 对应的分区是相连的，合并较为方便，便打算将这两个分区合并起来。以下是 <code>df</code><sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup> 的结果：</p>
+
+<pre><code class="language-console">$ df
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p6   81G   47G   30G  61% /
+/dev/nvme0n1p8   53G   13G   37G  26% /home
+/dev/nvme0n1p1  256M   30M  227M  12% /boot/efi
+</code></pre>
+
+<h2 id="背景">背景</h2>
+<p>两年前第一次尝试 Linux 的时候我将 Linux 安装在了一个移动硬盘上。这种情况文件系统损坏的可能性比较大，所以将 <code>/</code> 和 <code>/home</code> 分开是有好处的，因为如果 <code>/</code> 所在的分区出现了故障 <code>/home</code> 中的个人文件不会受影响。</p>
+
+<p>所以后来在内置硬盘上安装 Linux 的时候也将 <code>/home</code> 单独分了一个分区，但是对于内置硬盘分区出现故障还是不太容易发生的。分成两个分区之后就得比较小心，否则一个分区空间不够时另一个分区也帮不上忙；或者出现上述的情况，整个硬盘的空闲空间足够，但是分开后不够。（256G 硬盘的悲伤）</p>
+
+<h2 id="过程">过程</h2>
+<h3 id="备份">备份</h3>
+<p>对于改分区这种危险操作，事前进行备份总是没有错的。使用 <code>rsync</code> 备份家目录到一个移动硬盘，可以把一些 cache 之类的目录排除，<code>rsync</code> 具体的用法参考 <a href="https://man.archlinux.org/man/extra/rsync/rsync.1" title="rsync(1)"><code>man rsync</code></a>。</p>
+
+<pre><code class="language-bash">sudo rsync -aAXvu --delete \
+    "$HOME" "/mnt/point/of/external/drive/home" \
+    --exclude=...
+</code></pre>
+
+<p>此命令也可以用于定期备份。</p>
+
+<h3 id="迁移">迁移</h3>
+<p>由于需要操作 <code>/home</code>，在登录一般用户的时候会无法将其 <code>umount</code>，所以得用 root 账号登录。为此我把我的登录管理器 <code>lightdm</code> disable 掉</p>
+<pre><code class="language-bash">sudo systemctl disable lightdm
+</code></pre>
+<p>重新启动后便进入了 tty1，输入 root 的用户名和密码，然后将挂载在 <code>/home</code> 的分区挂载到另一个目录上，再使用 <code>rsync</code> 同步：</p>
+<pre><code class="language-bash">umount /home
+mkdir /mnt/home
+mount /dev/nvme0n1p8 /mnt/home
+rsync -aAXuv /mnt/home/wang /home
+</code></pre>
+
+<h3 id="合并分区">合并分区</h3>
+<p><code>rsync</code> 同步完成之后就需要修改分区了。此时可以直接使用 <code>fdisk</code> 或者其它的命令行工具修改，但是我还是想稳一点，用 Gparted 来修改，顺便测试一下登录一般用户会不会出现问题。使用 <code>Ctrl</code>+<code>Alt</code>+<code>F2</code> 切到 tty2，登录一般用户并运行 <code>startx</code> 启动图形界面（我用的是 i3，不同的配置及不同的桌面环境的启动方式可能会有不同），此时可以看看家目录中的文件是否正常，然后利用 Gparted 删除 <code>/home</code> 对应的分区，再扩展 <code>/</code> 的分区。</p>
+
+<p>改完分区后可以确认一下 <code>/etc/fstab</code> 有没有问题，如果 <code>/home</code> 在上面的话应该将这一行删掉，否则可能出现挂载失败而进入 rescue mode 的情况。</p>
+
+<h3 id="完成">完成</h3>
+<p>分区修改好之后登出，回到 tty1 将登录管理器重新 enable 便可重启。</p>
+
+<h2 id="结果">结果</h2>
+<p>成功 🎉</p>
+
+<pre><code class="language-console">$ df
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p6  133G   60G   68G  47% /
+/dev/nvme0n1p1  256M   30M  227M  12% /boot/efi
+</code></pre>
+
+<hr>
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1">
+      <p>这里的 <code>df</code> 是一个小函数，见我的 <a href="https://github.com/weirane/dotfiles/blob/2cab6e6/zsh/functions.zsh#L22">dotfiles 仓库</a> <a href="#fnref:1" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+  </ol>
+</div>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/partition" class="page__taxonomy-item" rel="tag">partition</a><span class="sep">, </span>
+    
+      <a href="/tags/rsync" class="page__taxonomy-item" rel="tag">rsync</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/categories/tweaks" class="page__taxonomy-item" rel="tag">Tweaks</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-09-11">September 11, 2024</time></p>
+
+
+      </footer>
+
+      
+
+      
+  
+    <nav class="pagination">
+      
+        <a href="/2020/01/switch-from-gnome-to-i3.html" class="pagination--pager" title="从 GNOME 迁移到 i3
+">Previous</a>
+      
+      
+        <a href="/2020/04/map-capslock-to-esc-and-ctrl.html" class="pagination--pager" title="将 Caps Lock 映射为 Escape 和 Ctrl
+">Next</a>
+      
+    </nav>
+  
+
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <section id="isso-thread"></section>
+
+  
+</div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/09/starting-notorious-rbg.html" rel="permalink">开始读《异见时刻》
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-09-08T00:00:00+08:00">September 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">打算开始读《异见时刻：“声名狼藉” 的金斯伯格大法官》。这是一本前美国最高法院大法官 Ruth Bader Ginsburg (RBG) 的传记。RBG 是美国最高法院第二位女性大法官。最开始听说 RBG 是在詹青云做客鲁豫的一集播客中（岩中花述 S5E1，03/12/2024）。当时好像正好是在 DC 市里面逛...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/08/cultural-differences.html" rel="permalink">中美文化差异
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-08-08T00:00:00+08:00">August 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          12 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近看了不少中国哲学的书和视频，想来结合我的经历说一下我浅薄的理解。我主要看的是复旦的王德峰老师的视频。最开始看王德峰老师是从他的 “中西方文化差异的渊源” 入坑的，然后又陆续看了马克思哲学、阳明心学、艺术哲学等等课程，感觉非常长脑子。他有很多片段在 B 站上都很火，特别是讲金刚经三句义的那一段。有兴趣的可以去搜...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/12/functional.html" rel="permalink">关于基于表达式的编程语言的一些思考
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-12-25T00:00:00+08:00">December 25, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近学 Go 语言又想起之前看过的一个 talk，presenter 说他几乎不用 else 关键字。因为一般情况下，if 语句的其中一个 branch 会比较短（比如处理特殊情况），这样可以在这个 branch 结束后直接从函数返回，后续的代码就不需要进行缩进了，如
+func fact(n int) int {...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/08/bwrap-wps.html" rel="permalink">使用 bwrap 隔离 WPS Office
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-08-20T00:00:00+08:00">August 20, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">看到依云在 博客 中提到了非特权沙盒工具 bwrap。博客的结尾提到可以用它来跑一些不太干净的软件，便来配置一下 WPS Office。
+
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li>
+            <a href="https://t.me/wrc_notebook" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-telegram" aria-hidden="true"></i>Telegram Channel
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://m.cmx.im/@weirane" target="_blank" rel="me nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-mastodon" aria-hidden="true"></i>Mastodon
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://github.com/weirane" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github" aria-hidden="true"></i>GitHub
+            </a>
+          </li>
+        
+      
+        
+      
+    
+
+    <li>
+      <a href="/feed.xml">
+        <i class="fas fa-fw fa-rss-square" aria-hidden="true"></i>Feed
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">
+  Copyright © 2025 Ruochen Wang <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  <br>
+  Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+  <br>
+  <a href="/status/">Site version 04398ad</a>
+  <br>
+  <a href="/sitemap.xml">Sitemap (XML)</a>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <script data-goatcounter="https://stats.ruo-chen.wang/count" async src="//stats.ruo-chen.wang/count.js"></script>
+
+
+
+
+
+
+    <script data-isso="https://isso.ruo-chen.wang" src="https://isso.ruo-chen.wang/js/embed.min.js" async></script>
+
+
+
+
+
+
+
+  </body>
+</html>

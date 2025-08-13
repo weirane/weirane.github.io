@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="zh" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>使用 pass 管理密码 | weirane’s blog</title>
+<meta name="description" content="Managing passwords with pass">
+
+
+  <meta name="author" content="weirane">
+  
+  <meta property="article:author" content="weirane">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="weirane's blog">
+<meta property="og:title" content="使用 pass 管理密码">
+<meta property="og:url" content="https://blog.ruo-chen.wang/2021/01/pass.html">
+
+
+  <meta property="og:description" content="Managing passwords with pass">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2021-01-09T00:00:00+08:00">
+
+
+
+  <meta property="article:modified_time" content="2024-09-11T11:08:25+08:00">
+
+
+
+
+<link rel="canonical" href="https://blog.ruo-chen.wang/2021/01/pass.html">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ruochen Wang",
+      "url": "https://blog.ruo-chen.wang/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="weirane's blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/styles/gruvbox-light.css">
+<script src="/static/highlight.pack.js"></script>
+<script>
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          weirane's blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/">Home</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/tags/">Tags</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/images/avatar.png" alt="weirane" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">weirane</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Fairfax, VA</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+            <li><a href="https://github.com/weirane" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox">
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Pages</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+          
+            <li><a href="/about/"><i class="fas fa-fw fa-user-circle"></i> About</a></li>
+          
+            <li><a href="/reflinks/"><i class="fas fa-fw fa-link"></i> Referal links</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="使用 pass 管理密码">
+    <meta itemprop="description" content="Pass 是一个使用 GPG 管理密码的工具。它的 网站 介绍说：  Pass: the standard unix password manager">
+    <meta itemprop="datePublished" content="2021-01-09T00:00:00+08:00">
+    <meta itemprop="dateModified" content="2024-09-11T11:08:25+08:00">
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">使用 pass 管理密码
+</h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-01-09T00:00:00+08:00">January 9, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right sticky">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#%E7%94%9F%E6%88%90-gpg-%E5%AF%86%E9%92%A5">生成 GPG 密钥</a></li>
+<li>
+<a href="#pass-%E5%91%BD%E4%BB%A4">pass 命令</a><ul>
+<li><a href="#%E6%B7%BB%E5%8A%A0%E5%AF%86%E7%A0%81">添加密码</a></li>
+<li><a href="#%E7%94%9F%E6%88%90%E5%AF%86%E7%A0%81">生成密码</a></li>
+<li><a href="#%E8%8E%B7%E5%8F%96%E5%AF%86%E7%A0%81">获取密码</a></li>
+<li><a href="#%E6%93%8D%E4%BD%9C%E5%AF%86%E7%A0%81%E6%96%87%E4%BB%B6">操作密码文件</a></li>
+</ul>
+</li>
+<li>
+<a href="#%E4%BD%BF%E7%94%A8-git">使用 Git</a><ul><li><a href="#%E6%B8%85%E9%99%A4-dangling-commits">清除 dangling commits</a></li></ul>
+</li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF">使用场景</a></li>
+<li><a href="#pass-%E7%9A%84%E6%89%A9%E5%B1%95">Pass 的扩展</a></li>
+<li><a href="#ios">iOS</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Pass 是一个使用 GPG 管理密码的工具。它的 <a href="https://www.passwordstore.org/">网站</a> 介绍说：</p>
+<blockquote>
+  <p>Pass: the standard unix password manager</p>
+</blockquote>
+
+<p><del>有 ed 编辑器内味了</del><sup id="fnref:ed-joke"><a href="#fn:ed-joke" class="footnote" rel="footnote" role="doc-noteref">1</a></sup></p>
+
+<p>Pass 保存的密码被存放在目录 <code>${PASSWORD_<wbr></wbr>STORE_<wbr></wbr>DIR:-<wbr></wbr>$HOME/<wbr></wbr>.password-store}</code>
+下，每个密码都是一个 GPG 加密的文件。除了密码还可以在此文件中存放用户名，<a href="https://en.wikipedia.org/wiki/One-time_password">OTP</a>
+URI 等其它信息。同时还可以把该目录作为一个 Git 仓库用于同步密码。</p>
+
+<h2 id="生成-gpg-密钥">生成 GPG 密钥</h2>
+
+<p>如果没有 GPG 密钥对则需要先生成。使用命令</p>
+<pre><code class="language-sh">gpg --full-gen-key
+</code></pre>
+<p>输入对应的信息即可，一般都可以用默认值。关于生成 GPG 密钥还可以看看
+<a href="https://wiki.archlinux.org/index.php/GnuPG#Create_a_key_pair">ArchWiki</a>。为了避免每次需要密码的时候都得输入 GPG 密钥的密码，可以配置 <a href="https://wiki.archlinux.org/index.php/GNOME/Keyring">GNOME Keyring</a> 或者 <a href="https://github.com/cruegge/pam-gnupg">pam-gnupg</a> 来在登录后记住密码。</p>
+
+<h2 id="pass-命令">
+<code>pass</code> 命令</h2>
+
+<p>首先用生成 GPG 密钥的 email 初始化 pass：</p>
+
+<pre><code class="language-sh">pass init ${GPGEMAIL?}
+</code></pre>
+
+<h3 id="添加密码">添加密码</h3>
+
+<p>使用命令 <code>pass insert email/fastmail</code>，输入两遍密码即可添加 <code>email/fastmail</code> 的密码。当密码的名字带有 <code>/</code> 时会将密码文件存放在对应的子目录下。运行 <code>pass</code> 或者
+<code>pass ls</code> 可以看到目前存储了哪些密码：</p>
+
+<pre><code class="language-console">$ pass ls
+Password Store
+└── email
+    └── fastmail
+</code></pre>
+
+<h3 id="生成密码">生成密码</h3>
+
+<p>使用 <code>pass generate website 16</code> 来生成一个长度为 16 的密码并保存为 <code>website</code>。可以加上 <code>-n</code> 选项生成不带特殊符号的密码。</p>
+
+<pre><code class="language-console">$ pass generate website 16 -n
+The generated password for website is:
+yKGhEkei98fGRKY6
+</code></pre>
+
+<h3 id="获取密码">获取密码</h3>
+
+<p>获取 <code>email/fastmail</code> 的密码的方法是运行 <code>pass email/fastmail</code>，或者加上 <code>-c</code> 选项将密码复制到剪贴板，此密码会在 45 秒后从剪贴板消失。注意如果密码文件有多行（如还存放了用户名等其它信息时），此命令只复制第一行。</p>
+
+<h3 id="操作密码文件">操作密码文件</h3>
+
+<p>用 <code>pass mv</code>，<code>pass cp</code>，<code>pass rm</code>，<code>pass edit</code> 对密码文件进行相应的操作。</p>
+
+<h2 id="使用-git">使用 Git</h2>
+
+<p>可以使用 git 来同步密码。在对应的 <code>git</code> 命令前添加 <code>pass</code> 即可直接操作 pass 的
+git 仓库。如</p>
+
+<pre><code class="language-sh">pass git init
+pass git remote add origin git@git.example.com:password-store.git
+pass git push -u origin master
+</code></pre>
+
+<p>为了安全还可以配置一个自己的 Git 服务器，见 <a href="/2020/08/git-server.html">搭建一个 Git 服务器</a>。</p>
+
+<h3 id="清除-dangling-commits">清除 dangling commits</h3>
+
+<p>有时想要重写 commit 历史，但是旧 commit 并不会被清除：</p>
+
+<pre><code class="language-console">$ git fsck --full
+Checking object directories: 100% (256/256), done.
+Checking objects: 100% (26/26), done.
+dangling commit b876e31a2740da9198c851532ce9a83ccaa71d21
+dangling commit 74e9cfda669d39ef8154270fcc8e14e8247b7c05
+</code></pre>
+
+<p>此时可以使用如下命令来清除这些 commit。</p>
+
+<pre><code class="language-sh">git reflog expire --expire=now --all
+git gc --prune=now
+</code></pre>
+
+<h2 id="使用场景">使用场景</h2>
+
+<p>我使用 pass 的主要场景是在脚本中获取密码，或者用于在配置文件中使用 pass 命令获取密码。这样做可以防止直接在配置中明文填写密码。如在 <a href="https://neomutt.org/">neomutt</a> 中配置帐号时：</p>
+
+<pre><code>set my_pass = "`pass show email/foo | head -1`"
+set smtp_pass = $my_pass
+</code></pre>
+
+<p>Pass 还可在浏览器中使用（Firefox 扩展 <a href="https://github.com/passff/passff">passff</a>，Chrome 扩展 <a href="https://github.com/browserpass/browserpass-extension">browserpass</a>）</p>
+
+<h2 id="pass-的扩展">Pass 的扩展</h2>
+
+<p>Pass 有许多扩展以增强其功能。例如可以通过 <a href="https://github.com/tadfisher/pass-otp">pass-otp</a> 来使用 OTP：</p>
+
+<ul>
+  <li>添加 OTP URI: <code>pass otp add email/fastmail</code>
+</li>
+  <li>获取 OTP code: <code>pass otp email/fastmail</code>
+</li>
+</ul>
+
+<p>虽然密码文件会被 GPG 加密，但是密码库的目录结构和文件名都是不加密的，任何人都可以查看。可以使用 <a href="https://github.com/roddhjav/pass-tomb">pass-tomb</a> 解决这个问题。它将密码存放在一个 <a href="https://www.dyne.org/software/tomb/">tomb</a> 中，查看密码前需要使用 <code>pass open</code> 将 tomb 打开，查看完毕后再使用 <code>pass close</code> 关闭
+tomb。</p>
+
+<p>其它的扩展见官网的 <a href="https://www.passwordstore.org/#extensions">列表</a>。</p>
+
+<h2 id="ios">iOS</h2>
+
+<p>Pass 在其它平台上都有客户端，在 iOS 中有 <a href="https://mssun.github.io/passforios/">passforios</a>。它有一些扩展功能，比如可在密码文件的第一行之后使用 <code>key: value</code> 的形式存放其他信息，如用户名等，可以方便地查看和复制这些额外信息。它也可以添加 OTP URI 以获取 OTP code。</p>
+
+<hr>
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:ed-joke">
+      <p><a href="https://www.gnu.org/fun/jokes/ed-msg.html" target="_blank">https://www.gnu.org/fun/jokes/ed-msg.html</a> <a href="#fnref:ed-joke" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+  </ol>
+</div>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/git" class="page__taxonomy-item" rel="tag">git</a><span class="sep">, </span>
+    
+      <a href="/tags/gpg" class="page__taxonomy-item" rel="tag">gpg</a><span class="sep">, </span>
+    
+      <a href="/tags/pass" class="page__taxonomy-item" rel="tag">pass</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/categories/tools" class="page__taxonomy-item" rel="tag">Tools</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-09-11">September 11, 2024</time></p>
+
+
+      </footer>
+
+      
+
+      
+  
+    <nav class="pagination">
+      
+        <a href="/2020/09/change-domain.html" class="pagination--pager" title="更换域名
+">Previous</a>
+      
+      
+        <a href="/2021/03/switch-from-manjaro-to-arch.html" class="pagination--pager" title="从 Manjaro 迁移到 Arch Linux
+">Next</a>
+      
+    </nav>
+  
+
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <section id="isso-thread"></section>
+
+  
+</div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/09/starting-notorious-rbg.html" rel="permalink">开始读《异见时刻》
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-09-08T00:00:00+08:00">September 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">打算开始读《异见时刻：“声名狼藉” 的金斯伯格大法官》。这是一本前美国最高法院大法官 Ruth Bader Ginsburg (RBG) 的传记。RBG 是美国最高法院第二位女性大法官。最开始听说 RBG 是在詹青云做客鲁豫的一集播客中（岩中花述 S5E1，03/12/2024）。当时好像正好是在 DC 市里面逛...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/08/cultural-differences.html" rel="permalink">中美文化差异
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-08-08T00:00:00+08:00">August 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          12 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近看了不少中国哲学的书和视频，想来结合我的经历说一下我浅薄的理解。我主要看的是复旦的王德峰老师的视频。最开始看王德峰老师是从他的 “中西方文化差异的渊源” 入坑的，然后又陆续看了马克思哲学、阳明心学、艺术哲学等等课程，感觉非常长脑子。他有很多片段在 B 站上都很火，特别是讲金刚经三句义的那一段。有兴趣的可以去搜...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/12/functional.html" rel="permalink">关于基于表达式的编程语言的一些思考
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-12-25T00:00:00+08:00">December 25, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近学 Go 语言又想起之前看过的一个 talk，presenter 说他几乎不用 else 关键字。因为一般情况下，if 语句的其中一个 branch 会比较短（比如处理特殊情况），这样可以在这个 branch 结束后直接从函数返回，后续的代码就不需要进行缩进了，如
+func fact(n int) int {...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/08/bwrap-wps.html" rel="permalink">使用 bwrap 隔离 WPS Office
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-08-20T00:00:00+08:00">August 20, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">看到依云在 博客 中提到了非特权沙盒工具 bwrap。博客的结尾提到可以用它来跑一些不太干净的软件，便来配置一下 WPS Office。
+
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li>
+            <a href="https://t.me/wrc_notebook" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-telegram" aria-hidden="true"></i>Telegram Channel
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://m.cmx.im/@weirane" target="_blank" rel="me nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-mastodon" aria-hidden="true"></i>Mastodon
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://github.com/weirane" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github" aria-hidden="true"></i>GitHub
+            </a>
+          </li>
+        
+      
+        
+      
+    
+
+    <li>
+      <a href="/feed.xml">
+        <i class="fas fa-fw fa-rss-square" aria-hidden="true"></i>Feed
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">
+  Copyright © 2025 Ruochen Wang <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  <br>
+  Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+  <br>
+  <a href="/status/">Site version 04398ad</a>
+  <br>
+  <a href="/sitemap.xml">Sitemap (XML)</a>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <script data-goatcounter="https://stats.ruo-chen.wang/count" async src="//stats.ruo-chen.wang/count.js"></script>
+
+
+
+
+
+
+    <script data-isso="https://isso.ruo-chen.wang" src="https://isso.ruo-chen.wang/js/embed.min.js" async></script>
+
+
+
+
+
+
+
+  </body>
+</html>

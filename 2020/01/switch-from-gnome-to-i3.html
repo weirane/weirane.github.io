@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="zh" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>从 GNOME 迁移到 i3 | weirane’s blog</title>
+<meta name="description" content="Switching from GNOME to i3">
+
+
+  <meta name="author" content="weirane">
+  
+  <meta property="article:author" content="weirane">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="weirane's blog">
+<meta property="og:title" content="从 GNOME 迁移到 i3">
+<meta property="og:url" content="https://blog.ruo-chen.wang/2020/01/switch-from-gnome-to-i3.html">
+
+
+  <meta property="og:description" content="Switching from GNOME to i3">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2020-01-16T00:00:00+08:00">
+
+
+
+  <meta property="article:modified_time" content="2024-09-11T11:08:25+08:00">
+
+
+
+
+<link rel="canonical" href="https://blog.ruo-chen.wang/2020/01/switch-from-gnome-to-i3.html">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Ruochen Wang",
+      "url": "https://blog.ruo-chen.wang/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="weirane's blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <link rel="shortcut icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/styles/gruvbox-light.css">
+<script src="/static/highlight.pack.js"></script>
+<script>
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          weirane's blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/">Home</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/about/">About</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/tags/">Tags</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/images/avatar.png" alt="weirane" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">weirane</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Fairfax, VA</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+            <li><a href="https://github.com/weirane" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox">
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Pages</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+          
+            <li><a href="/about/"><i class="fas fa-fw fa-user-circle"></i> About</a></li>
+          
+            <li><a href="/reflinks/"><i class="fas fa-fw fa-link"></i> Referal links</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="从 GNOME 迁移到 i3">
+    <meta itemprop="description" content="本文记录一下在我的 Manjaro 上从 GNOME 迁移到 i3-gaps 的经历，也可以为在其它 Arch 系发行版上安装 i3-gaps 提供一些参考。i3 是一种平铺窗口管理器（tiling window manager）。我在本机安装 i3 之前先在虚拟机上尝试了一下 Manjaro 的 i3 edition 以熟悉一下 i3 的 key bindings，以下在配置时有所参考它的默认配置。">
+    <meta itemprop="datePublished" content="2020-01-16T00:00:00+08:00">
+    <meta itemprop="dateModified" content="2024-09-11T11:08:25+08:00">
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">从 GNOME 迁移到 i3
+</h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2020-01-16T00:00:00+08:00">January 16, 2020</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-clock" aria-hidden="true"></i>
+        
+          8 minute read
+        
+      </span>
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right sticky">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#%E5%AE%89%E8%A3%85">安装</a></li>
+<li>
+<a href="#%E8%BD%AF%E4%BB%B6%E9%85%8D%E7%BD%AE">软件配置</a><ul>
+<li><a href="#fcitx">fcitx</a></li>
+<li><a href="#gnome-keyring-%E8%87%AA%E5%8A%A8%E8%A7%A3%E9%94%81">GNOME Keyring 自动解锁</a></li>
+<li><a href="#%E8%AE%BE%E7%BD%AE%E5%A2%99%E7%BA%B8">设置墙纸</a></li>
+<li><a href="#notify-send">notify-send</a></li>
+<li><a href="#termite-%E9%80%8F%E6%98%8E%E8%83%8C%E6%99%AF">Termite 透明背景</a></li>
+<li><a href="#%E8%AE%BE%E7%BD%AE-xdg-open-%E4%BD%BF%E7%94%A8%E7%9A%84%E7%A8%8B%E5%BA%8F">设置 xdg-open 使用的程序</a></li>
+<li><a href="#%E6%88%AA%E5%9B%BE">截图</a></li>
+<li><a href="#%E6%8C%82%E8%BD%BD">挂载</a></li>
+<li><a href="#%E5%9B%BE%E7%89%87%E5%92%8C-pdf-%E9%98%85%E8%AF%BB%E5%99%A8">图片和 PDF 阅读器</a></li>
+<li><a href="#qq">QQ</a></li>
+</ul>
+</li>
+<li>
+<a href="#%E7%A1%AC%E4%BB%B6%E7%9B%B8%E5%85%B3">硬件相关</a><ul>
+<li><a href="#%E8%BF%9E%E6%8E%A5-wifi%E8%93%9D%E7%89%99">连接 WiFi、蓝牙</a></li>
+<li><a href="#disable-beeps">Disable beeps</a></li>
+<li><a href="#remap-capslock">Remap CapsLock</a></li>
+<li><a href="#%E8%A7%A6%E6%91%B8%E6%9D%BF%E7%9B%B8%E5%85%B3">触摸板相关</a></li>
+<li><a href="#%E5%A4%9A%E6%98%BE%E7%A4%BA%E5%99%A8">多显示器</a></li>
+<li><a href="#%E6%9A%96%E8%89%B2%E5%B1%8F%E5%B9%95night-shift">暖色屏幕（night shift）</a></li>
+<li><a href="#%E9%94%81%E5%B1%8F">锁屏</a></li>
+<li><a href="#%E9%9F%B3%E9%87%8F%E4%BA%AE%E5%BA%A6%E8%B0%83%E8%8A%82%E9%94%AE">音量/亮度调节键</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>本文记录一下在我的 Manjaro 上从 GNOME 迁移到 <a href="https://github.com/Airblader/i3">i3-gaps</a> 的经历，也可以为在其它 Arch 系发行版上安装 i3-gaps 提供一些参考。i3 是一种平铺窗口管理器（tiling window manager）。我在本机安装 i3 之前先在虚拟机上尝试了一下 <a href="https://manjaro.org/download/#i3">Manjaro 的 i3 edition</a> 以熟悉一下 i3 的 key bindings，以下在配置时有所参考它的默认配置。</p>
+
+<hr>
+
+<ul>
+  <li>2020-05-13 更新：增加了 <a href="#gnome-keyring-%E8%87%AA%E5%8A%A8%E8%A7%A3%E9%94%81">GNOME Keyring 自动解锁</a> 一节。</li>
+  <li>2020-04-11 更新：增加了 <a href="#qq">QQ</a> 一节。</li>
+  <li>2020-03-01 更新：增加了 <a href="#%E6%9A%96%E8%89%B2%E5%B1%8F%E5%B9%95night-shift">暖色屏幕（night shift）</a> 一节。</li>
+  <li>2020-01-23 更新：增加了 <a href="#%E5%A4%9A%E6%98%BE%E7%A4%BA%E5%99%A8">多显示器</a> 一节。</li>
+</ul>
+
+<h2 id="安装">安装</h2>
+<p><code>i3-wm</code> 和 <code>i3-gaps</code> 这两个包都提供 i3 window manager，而且它们互相冲突。由于我在虚拟机中体验的是 <code>i3-gaps</code> 所以这里就用了 <code>i3-gaps</code> 这个版本。</p>
+
+<p>使用 <code>pacman</code> 安装 <code>i3-gaps</code>。安装之后在目录 <code>/usr/share/xsessions</code> 中会出现 <code>i3.desktop</code>，直接重启即可在 gdm 菜单中看到 <code>i3</code>，选择它再输入密码登录即可进入 i3。 Gdm 是在安装 GNOME 的时候安装的，也可以选择其它的登录管理器。</p>
+
+<p>再安装一些基本的程序，如 <code>dmenu</code> 或者 <code>dmenu-manjaro</code>（推荐），终端和顶栏。我使用的终端是 <a href="https://github.com/thestinger/termite">termite</a>，顶栏是 <a href="https://github.com/polybar/polybar">polybar</a>。</p>
+
+<hr>
+
+<p>由于没有图形化的菜单，所以 i3 中的配置基本上都是手写配置文件。我的 i3 配置文件 <code>~/.config/i3/config</code> 是在 Manjaro i3 edition 的默认配置基础上修改的。</p>
+
+<h2 id="软件配置">软件配置</h2>
+<h3 id="fcitx">fcitx</h3>
+<p>需要将 fcitx 加入自动启动的程序中，因为 GNOME 会自动启动 fcitx 而 i3 不会。需要注意的是如果使用 vim 的 <code>fcitx.vim</code> 插件的话不能以 root 的身份启动 fcitx（如将 <code>fcitx</code> 命令放在 <code>~/.xprofile</code> 中），不然打开 vim 时出现 <code>fcitx.vim</code> 插件报错：</p>
+
+<pre><code>socket file of fcitx not found, fcitx.vim not loaded.
+</code></pre>
+
+<p>原因是 <code>/tmp/fcitx-socket-:1</code> 这个 socket 的所有者是 root，<code>fcitx.vim</code> 对它没有写权限。启动命令最好放在 i3 的配置文件中，即在 <code>~/.config/i3/config</code> 中加入：</p>
+
+<pre><code>exec --no-startup-id fcitx
+</code></pre>
+
+<h3 id="gnome-keyring-自动解锁">GNOME Keyring 自动解锁</h3>
+<p>如果使用 <code>startx</code> 启动 i3，那么需要额外的配置来使 GNOME Keyring 自动解锁。根据 <a href="https://wiki.archlinux.org/index.php/GNOME/Keyring#Console_login">Arch Wiki</a>，自动解锁需要使用其中的「PAM method」。修改文件 <code>/etc/pam.d/login</code>，将</p>
+
+<pre><code>auth optional pam_gnome_keyring.so
+</code></pre>
+
+<p>加入 <code>auth</code> section 的末尾，再将</p>
+
+<pre><code>session optional pam_gnome_keyring.so auto_start
+</code></pre>
+
+<p>加入 <code>session</code> section 的末尾。然后将以下内容加入 <code>~/.xinitrc</code>：</p>
+
+<pre><code>eval "$(/usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh)"
+export SSH_AUTH_SOCK
+</code></pre>
+
+<h3 id="设置墙纸">设置墙纸</h3>
+<p>可以使用 <code>feh</code> 来设置墙纸，使用命令</p>
+
+<pre><code>feh --bg-fill &lt;image file&gt;
+</code></pre>
+
+<p>在 i3 启动时自动执行该命令即可。</p>
+
+<h3 id="notify-send">notify-send</h3>
+<p>使用 <code>notify-send</code> 发现并没有显示通知。此时需要安装一个 <a href="https://wiki.archlinux.org/index.php/Desktop_notifications#Notification_servers">notification daemon</a>，我选的是 <code>dunst</code>。将它加入 i3 自动启动的程序中或者利用 <code>systemd</code> 自动启动即可。</p>
+
+<h3 id="termite-透明背景">Termite 透明背景</h3>
+<p>使用 termite 的透明背景功能需要安装 <code>xcompmgr</code> 并让它自动启动。</p>
+
+<h3 id="设置-xdg-open-使用的程序">设置 xdg-open 使用的程序</h3>
+<p>参考 <a href="https://wiki.archlinux.org/index.php/XDG_MIME_Applications">Arch Wiki</a>，修改 <code>~/.config/mimeapps.list</code>（没有就创建该文件），如下：</p>
+<pre><code class="language-ini">[Default Applications]
+application/pdf=org.pwmt.zathura.desktop
+image/png=sxiv.desktop
+</code></pre>
+
+<h3 id="截图">截图</h3>
+<p>使用 <code>scrot</code>。写一个脚本以支持不同的使用方式并使用 <code>zenity</code> 选择保存位置，如 <a href="https://github.com/weirane/dotfiles/blob/33edd42a3c/dotconfig/i3/scripts/screenshot.sh">这个脚本</a>。并在 <code>~/.config/i3/config</code> 中添加：</p>
+
+<pre><code>bindsym Print exec --no-startup-id /path/to/screenshot.sh --whole
+bindsym $mod+Shift+Print exec --no-startup-id /path/to/screenshot.sh --window
+bindsym Shift+Print --release exec --no-startup-id /path/to/screenshot.sh --select
+</code></pre>
+
+<p>这样的效果是使用 <code>PrtSc</code> 截取全屏，<code>Shift</code>+<code>PrtSc</code> 截取一个区域，<code>Super</code>+<code>Shift</code>+<code>PrtSc</code> 截取当前的窗口。</p>
+
+<h3 id="挂载">挂载</h3>
+<p>在 i3 中没有自带 GNOME 中插入 U 盘自动挂载的功能，不过可以利用 dmenu 写一个选择并挂载 drive 的脚本 <a href="https://github.com/weirane/dotfiles/blob/33edd42a3c/dotconfig/i3/scripts/mount.sh">(link)</a>，再给这个脚本绑定一个快捷键即可。</p>
+
+<h3 id="图片和-pdf-阅读器">图片和 PDF 阅读器</h3>
+<p>由于从 GNOME 3.32 开始一些 GNOME 应用的标题栏变得很厚，evince 和 gthumb 在 i3 这种平铺窗口管理器下有一个很高的标题栏，所以打算换一个阅读器。选择的图片阅读器是 <a href="https://github.com/muennich/sxiv">sxiv</a>，PDF 阅读器是 <a href="https://pwmt.org/projects/zathura/">zathura</a>。对应的配置文件在我的 <a href="https://github.com/weirane/dotfiles/blob/master/dotconfig/">dotfiles</a> 仓库里。</p>
+
+<h3 id="qq">QQ</h3>
+<p>在 GNOME 使用 QQ 我是用的 <code>archlinuxcn/deepin.com.qq.office</code> 这个包。但是在 i3 中启动时会报 <code>X Error of failed request</code>，解决方法是安装 <code>xsettingsd</code>，将其挂在后台再启动 QQ。</p>
+
+<p><code>xsettingsd</code> 的配置文件可以通过先运行 <code>/usr/lib/gsd-xsettings</code> 再使用 <code>xsettingsd</code> 自带的 <code>dump_xsettings</code> 命令获取，将命令的输出写入 <code>~/.config/xsettingsd/xsettingsd.conf</code>，然后将以 <code>Gtk</code> 或 <code>Gdk</code> 开头的行全部删除。</p>
+
+<h2 id="硬件相关">硬件相关</h2>
+<h3 id="连接-wifi蓝牙">连接 WiFi、蓝牙</h3>
+<p>安装 <code>network-manager-applet</code> 和 <code>blueman</code>，再设置自动启动 <code>nm-applet</code> 和 <code>blueman-applet</code> 即可，重新登录（或者手动启动这两个程序）即可在系统托盘看到对应的菜单。</p>
+
+<p>开机时自动打开蓝牙：编辑文件 <code>/etc/bluetooth/main.conf</code>，将 <code>[Policy]</code> 一节中的 <code>AutoEnable</code> 设置为 true：</p>
+
+<pre><code class="language-ini">[Policy]
+AutoEnable=true
+</code></pre>
+
+<h3 id="disable-beeps">Disable beeps</h3>
+<p>根据 <a href="https://wiki.archlinux.org/index.php/PC_speaker#Disable_PC_Speaker">Arch Wiki</a>，使用命令</p>
+<pre><code class="language-sh">sudo rmmod pcspkr
+</code></pre>
+
+<p>或者把此设置永久化：</p>
+<pre><code class="language-sh">echo "blacklist pcspkr" | sudo tee /etc/modprobe.d/nobeep.conf
+</code></pre>
+
+<h3 id="remap-capslock">Remap CapsLock</h3>
+<p>我一般会将 CapsLock 键映射成 Ctrl 键，可以利用 <code>~/.Xmodmap</code> 文件进行设置：</p>
+
+<pre><code>clear lock
+clear control
+add control = Caps_Lock Control_L Control_R
+keycode 66 = Control_L Control_L Control_L Control_L
+</code></pre>
+
+<p>然后在 <code>~/.xinitrc</code> 中加入 <code>xmodmap ~/.Xmodmap</code>。这样设置之后就无法通过键盘中的某一个键实现 CapsLock 了，如果需要的话可以使用 <code>xdotool key Caps_Lock</code> 命令来触发。</p>
+
+<div class="notice--info">
+  <p><i class="fas fa-exclamation-circle"></i> <strong>注意！</strong></p>
+
+  <p>用这种方法对执行 <code>xmodmap</code> 命令后连接的键盘没有效果。经过一番调研<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup><sup>,</sup><sup id="fnref:2"><a href="#fn:2" class="footnote" rel="footnote" role="doc-noteref">2</a></sup>，一个解决方案是使用 <code>inotifywait</code> 监控 <code>/dev/input</code> 中的新设备并在有新设备时执行 <code>xmodmap</code> 命令，写一个 <a href="https://github.com/weirane/dotfiles/blob/master/dotconfig/i3/scripts/xmodmap-on-new-input.sh">脚本</a> 并设置自动启动即可。</p>
+</div>
+
+<h3 id="触摸板相关">触摸板相关</h3>
+<p>目标：</p>
+<ul>
+  <li>轻拍触摸板相当于按键</li>
+  <li>触摸板自然滚动（natrual scrolling）</li>
+</ul>
+
+<p>参考 <a href="https://cravencode.com/post/essentials/enable-tap-to-click-in-i3wm/">这里</a>，将以下内容写入文件 <code>/etc/X11/xorg.conf.d/90-touchpad.conf</code>：</p>
+
+<pre><code>Section "InputClass"
+        Identifier "touchpad"
+        MatchIsTouchpad "on"
+        Driver "libinput"
+        Option "Tapping" "on"
+        Option "TappingButtonMap" "lrm"
+        Option "NaturalScrolling" "on"
+        Option "ScrollMethod" "twofinger"
+EndSection
+</code></pre>
+
+<p>重启或注销再登录即可看到效果。</p>
+
+<h3 id="多显示器">多显示器</h3>
+<p>配置多个显示器可以使用 <a href="https://wiki.archlinux.org/index.php/Xrandr"><code>xrandr</code></a> 工具。图形化的配置工具可以使用 <code>arandr</code> 这个包。</p>
+
+<h3 id="暖色屏幕night-shift">暖色屏幕（night shift）</h3>
+<p>在晚上将屏幕颜色调成偏暖眼睛看得舒服些。在 GNOME 中内置了这个功能，在 i3 中可以安装 <a href="https://wiki.archlinux.org/index.php/Redshift"><code>redshift</code></a> 来达到相同的效果。安装后可通过 <code>systemd</code> 自动开启，使用</p>
+
+<pre><code>systemctl --user enable redshift
+</code></pre>
+
+<p>或者如果想要状态栏的图标：</p>
+
+<pre><code>systemctl --user enable redshift-gtk
+</code></pre>
+
+<h3 id="锁屏">锁屏</h3>
+<p>想要达到以下的效果：</p>
+<ul>
+  <li>定时锁定</li>
+  <li>合上屏幕自动锁定</li>
+  <li>锁屏后短时间黑屏</li>
+</ul>
+
+<p>利用 <code>xset</code>，<code>xss-lock</code> 配合锁屏工具 <code>i3lock</code>。<code>xset</code> 用于设置屏幕黑暗时间，<code>xss-lock</code> 可以监控 <a href="https://wiki.archlinux.org/index.php/Display_Power_Management_Signaling">DPMS</a> 信号并自动执行锁屏程序。在 i3 配置文件中加入</p>
+
+<pre><code>exec --no-startup-id xss-lock -n /path/to/dim-screen.sh -- /path/to/lock.sh -i
+</code></pre>
+
+<p><a href="https://github.com/weirane/dotfiles/blob/master/dotconfig/i3/scripts/dim-screen.sh">dim-screen.sh</a> 修改自 xss-lock 的仓库，<a href="https://github.com/weirane/dotfiles/blob/master/dotconfig/i3/scripts/lock.sh">lock.sh</a> 如链接。</p>
+
+<h3 id="音量亮度调节键">音量/亮度调节键</h3>
+<p>参考 StackOverflow 上的一个 <a href="https://unix.stackexchange.com/a/439487">答案</a>，安装 <code>xorg-xbacklight</code> 并将以下五行加入 <code>~/.config/i3/config</code>：</p>
+
+<pre><code>bindsym XF86AudioMute exec "amixer sset 'Master' toggle"
+bindsym XF86AudioLowerVolume exec "amixer sset 'Master' 5%-"
+bindsym XF86AudioRaiseVolume exec "amixer sset 'Master' 5%+"
+bindsym XF86MonBrightnessUp exec "xbacklight -inc 5"
+bindsym XF86MonBrightnessDown exec "xbacklight -dec 5"
+</code></pre>
+
+<hr>
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1">
+      <p>这个 bug report 的最后一个 comment：<a href="https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/287215">https://bugs.launchpad.net/ubuntu/+source/xorg-server/+bug/287215</a> <a href="#fnref:1" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+    <li id="fn:2">
+      <p><a href="https://bugs.freedesktop.org/show_bug.cgi?id=25262#c3">https://bugs.freedesktop.org/show_bug.cgi?id=25262#c3</a> <a href="#fnref:2" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+  </ol>
+</div>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/tags/dotfiles" class="page__taxonomy-item" rel="tag">dotfiles</a><span class="sep">, </span>
+    
+      <a href="/tags/i3" class="page__taxonomy-item" rel="tag">i3</a><span class="sep">, </span>
+    
+      <a href="/tags/terminal" class="page__taxonomy-item" rel="tag">terminal</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/categories/tweaks" class="page__taxonomy-item" rel="tag">Tweaks</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-09-11">September 11, 2024</time></p>
+
+
+      </footer>
+
+      
+
+      
+  
+    <nav class="pagination">
+      
+        <a href="/2019/11/rust-wasm-closest-pair.html" class="pagination--pager" title="Rust + WebAssembly: 最近点对问题
+">Previous</a>
+      
+      
+        <a href="/2020/02/combine-two-partitions.html" class="pagination--pager" title="合并挂载在 / 和 /home 的分区
+">Next</a>
+      
+    </nav>
+  
+
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <section id="isso-thread"></section>
+
+  
+</div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/09/starting-notorious-rbg.html" rel="permalink">开始读《异见时刻》
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-09-08T00:00:00+08:00">September 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          4 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">打算开始读《异见时刻：“声名狼藉” 的金斯伯格大法官》。这是一本前美国最高法院大法官 Ruth Bader Ginsburg (RBG) 的传记。RBG 是美国最高法院第二位女性大法官。最开始听说 RBG 是在詹青云做客鲁豫的一集播客中（岩中花述 S5E1，03/12/2024）。当时好像正好是在 DC 市里面逛...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2024/08/cultural-differences.html" rel="permalink">中美文化差异
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2024-08-08T00:00:00+08:00">August 8, 2024</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          12 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近看了不少中国哲学的书和视频，想来结合我的经历说一下我浅薄的理解。我主要看的是复旦的王德峰老师的视频。最开始看王德峰老师是从他的 “中西方文化差异的渊源” 入坑的，然后又陆续看了马克思哲学、阳明心学、艺术哲学等等课程，感觉非常长脑子。他有很多片段在 B 站上都很火，特别是讲金刚经三句义的那一段。有兴趣的可以去搜...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/12/functional.html" rel="permalink">关于基于表达式的编程语言的一些思考
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-12-25T00:00:00+08:00">December 25, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">最近学 Go 语言又想起之前看过的一个 talk，presenter 说他几乎不用 else 关键字。因为一般情况下，if 语句的其中一个 branch 会比较短（比如处理特殊情况），这样可以在这个 branch 结束后直接从函数返回，后续的代码就不需要进行缩进了，如
+func fact(n int) int {...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/2021/08/bwrap-wps.html" rel="permalink">使用 bwrap 隔离 WPS Office
+</a>
+      
+    </h2>
+    
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2021-08-20T00:00:00+08:00">August 20, 2021</time>
+      </span>
+    
+
+    <span class="page__meta-sep"></span>
+
+    
+      
+      
+
+      <span class="page__meta-readtime">
+        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
+        
+          2 minute read
+        
+      </span>
+    
+  </p>
+
+
+    <p class="archive__item-excerpt" itemprop="description">看到依云在 博客 中提到了非特权沙盒工具 bwrap。博客的结尾提到可以用它来跑一些不太干净的软件，便来配置一下 WPS Office。
+
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li>
+            <a href="https://t.me/wrc_notebook" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-telegram" aria-hidden="true"></i>Telegram Channel
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://m.cmx.im/@weirane" target="_blank" rel="me nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-mastodon" aria-hidden="true"></i>Mastodon
+            </a>
+          </li>
+        
+      
+        
+          <li>
+            <a href="https://github.com/weirane" target="_blank" rel="nofollow noopener noreferrer">
+              <i class="fab fa-fw fa-github" aria-hidden="true"></i>GitHub
+            </a>
+          </li>
+        
+      
+        
+      
+    
+
+    <li>
+      <a href="/feed.xml">
+        <i class="fas fa-fw fa-rss-square" aria-hidden="true"></i>Feed
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">
+  Copyright © 2025 Ruochen Wang <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+  <br>
+  Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+  <br>
+  <a href="/status/">Site version 04398ad</a>
+  <br>
+  <a href="/sitemap.xml">Sitemap (XML)</a>
+</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/assets/js/lunr/lunr.min.js"></script>
+<script src="/assets/js/lunr/lunr-store.js"></script>
+<script src="/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+  <script data-goatcounter="https://stats.ruo-chen.wang/count" async src="//stats.ruo-chen.wang/count.js"></script>
+
+
+
+
+
+
+    <script data-isso="https://isso.ruo-chen.wang" src="https://isso.ruo-chen.wang/js/embed.min.js" async></script>
+
+
+
+
+
+
+
+  </body>
+</html>
